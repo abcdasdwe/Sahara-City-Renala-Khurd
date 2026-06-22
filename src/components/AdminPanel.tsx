@@ -786,7 +786,7 @@ export default function AdminPanel({
                     setActiveTab(tab.id as any);
                     setEditingProperty(null);
                     setEditingBlog(null);
-                    window.history.pushState(null, '', `/admin/${tab.id}`);
+                    window.history.pushState(null, '', `/?page=admin&tab=${tab.id}`);
                   }}
                   className={`w-full flex items-center justify-between py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider text-left transition-all cursor-pointer ${
                     activeTab === tab.id

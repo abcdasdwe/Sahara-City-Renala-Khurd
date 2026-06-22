@@ -23,13 +23,29 @@ export default function App() {
   // Navigation states
   const [currentTab, setCurrentTab] = useState<string>(() => {
     const path = window.location.pathname;
-    if (path === '/login') return 'login';
-    if (path.startsWith('/admin')) {
+    const searchParams = new URLSearchParams(window.location.search);
+    const pageParam = searchParams.get('page');
+    const hash = window.location.hash;
+
+    const isLoginPath = path === '/login' || 
+                        path === '/login.html' || 
+                        path.endsWith('login.html') || 
+                        pageParam === 'login' || 
+                        hash === '#/login' || 
+                        hash === '#/login.html';
+
+    if (isLoginPath) return 'login';
+
+    const isAdminPath = path.startsWith('/admin') || 
+                        pageParam === 'admin' || 
+                        hash.startsWith('#/admin');
+
+    if (isAdminPath) {
       const token = localStorage.getItem('sahara_admin_token');
       const expiry = localStorage.getItem('sahara_admin_expiry');
       const isAuth = !!(token && expiry && Date.now() < Number(expiry));
       if (!isAuth) {
-        window.history.replaceState(null, '', '/login');
+        window.location.replace('/login.html');
         return 'login';
       }
       return 'admin';
@@ -39,6 +55,22 @@ export default function App() {
 
   const [adminActiveSubTab, setAdminActiveSubTab] = useState<'dashboard' | 'properties' | 'leads' | 'reviews' | 'blogs' | 'media' | 'settings' | 'utility'>(() => {
     const path = window.location.pathname;
+    const searchParams = new URLSearchParams(window.location.search);
+    const pageParam = searchParams.get('page');
+    const tabParam = searchParams.get('tab');
+    const hash = window.location.hash;
+
+    if (tabParam && ['dashboard', 'properties', 'leads', 'reviews', 'blogs', 'media', 'settings', 'utility'].includes(tabParam)) {
+      return tabParam as any;
+    }
+
+    if (hash.startsWith('#/admin/')) {
+      const sub = hash.replace('#/admin/', '').trim();
+      if (['dashboard', 'properties', 'leads', 'reviews', 'blogs', 'media', 'settings', 'utility'].includes(sub)) {
+        return sub as any;
+      }
+    }
+
     if (path.startsWith('/admin/')) {
       const sub = path.replace('/admin/', '').trim();
       if (['dashboard', 'properties', 'leads', 'reviews', 'blogs', 'media', 'settings', 'utility'].includes(sub)) {
@@ -55,37 +87,60 @@ export default function App() {
   useEffect(() => {
     const checkRouteAndGuard = () => {
       const path = window.location.pathname;
+      const searchParams = new URLSearchParams(window.location.search);
+      const pageParam = searchParams.get('page');
+      const tabParam = searchParams.get('tab');
+      const hash = window.location.hash;
+
       const token = localStorage.getItem('sahara_admin_token');
       const expiry = localStorage.getItem('sahara_admin_expiry');
       const isAuth = !!(token && expiry && Date.now() < Number(expiry));
 
-      if (path === '/login') {
+      const isLoginPath = path === '/login' || 
+                          path === '/login.html' || 
+                          path.endsWith('login.html') || 
+                          pageParam === 'login' || 
+                          hash === '#/login' || 
+                          hash === '#/login.html';
+
+      const isAdminPath = path.startsWith('/admin') || 
+                          pageParam === 'admin' || 
+                          hash.startsWith('#/admin');
+
+      if (isLoginPath) {
         if (isAuth) {
-          window.history.replaceState(null, '', '/admin/dashboard');
+          window.history.replaceState(null, '', '/?page=admin&tab=dashboard');
           setCurrentTab('admin');
           setAdminActiveSubTab('dashboard');
         } else {
           setCurrentTab('login');
         }
-      } else if (path.startsWith('/admin')) {
+      } else if (isAdminPath) {
         if (!isAuth) {
-          window.history.replaceState(null, '', '/login');
-          setCurrentTab('login');
+          window.location.replace('/login.html');
         } else {
           setCurrentTab('admin');
           // Parse subtab
-          const sub = path.replace('/admin', '').replace('/', '').trim();
-          if (['dashboard', 'properties', 'leads', 'reviews', 'blogs', 'media', 'settings', 'utility'].includes(sub)) {
+          let sub: string | null = tabParam;
+          if (!sub && hash.startsWith('#/admin/')) {
+            sub = hash.replace('#/admin/', '').trim();
+          }
+          if (!sub && path.startsWith('/admin/')) {
+            sub = path.replace('/admin/', '').trim();
+          }
+
+          if (sub && ['dashboard', 'properties', 'leads', 'reviews', 'blogs', 'media', 'settings', 'utility'].includes(sub)) {
             setAdminActiveSubTab(sub as any);
           } else {
-            window.history.replaceState(null, '', '/admin/dashboard');
             setAdminActiveSubTab('dashboard');
           }
         }
       } else {
         // It's a public path
         if (path === '/') {
-          // Keep current state
+          if (pageParam === 'login' && !isAuth) {
+            setCurrentTab('login');
+          }
         }
       }
     };
@@ -116,14 +171,19 @@ export default function App() {
   useEffect(() => {
     const checkSessionExpiry = () => {
       const path = window.location.pathname;
-      if (path.startsWith('/admin')) {
+      const searchParams = new URLSearchParams(window.location.search);
+      const pageParam = searchParams.get('page');
+      
+      const isAdminPath = path.startsWith('/admin') || 
+                          pageParam === 'admin' || 
+                          window.location.hash.startsWith('#/admin');
+
+      if (isAdminPath) {
         const expiry = localStorage.getItem('sahara_admin_expiry');
         if (expiry && Date.now() > Number(expiry)) {
           localStorage.removeItem('sahara_admin_token');
           localStorage.removeItem('sahara_admin_expiry');
-          window.history.replaceState(null, '', '/login');
-          window.dispatchEvent(new Event('popstate'));
-          alert('Session has expired. For safety protocols, you have been automatically logged out.');
+          window.location.replace('/login.html?session=expired');
         }
       }
     };
@@ -331,7 +391,7 @@ export default function App() {
         <SEOHead view="login" />
         <AdminLogin 
           onLoginSuccess={() => {
-            window.history.pushState(null, '', '/admin/dashboard');
+            window.history.pushState(null, '', '/?page=admin&tab=dashboard');
           }}
           darkMode={darkMode}
           setDarkMode={setDarkMode}
@@ -371,7 +431,7 @@ export default function App() {
                   onClick={() => {
                     localStorage.removeItem('sahara_admin_token');
                     localStorage.removeItem('sahara_admin_expiry');
-                    window.history.pushState(null, '', '/login');
+                    window.location.replace('/login.html');
                   }}
                   className="py-2.5 px-4 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-md cursor-pointer transition-colors"
                 >
