@@ -53,27 +53,27 @@ export default function App() {
     return 'home';
   });
 
-  const [adminActiveSubTab, setAdminActiveSubTab] = useState<'dashboard' | 'properties' | 'leads' | 'reviews' | 'blogs' | 'media' | 'settings' | 'utility'>(() => {
+  const [adminActiveSubTab, setAdminActiveSubTab] = useState<'dashboard' | 'properties' | 'leads' | 'reviews' | 'blogs' | 'media' | 'settings' | 'utility' | 'seo'>(() => {
     const path = window.location.pathname;
     const searchParams = new URLSearchParams(window.location.search);
     const pageParam = searchParams.get('page');
     const tabParam = searchParams.get('tab');
     const hash = window.location.hash;
 
-    if (tabParam && ['dashboard', 'properties', 'leads', 'reviews', 'blogs', 'media', 'settings', 'utility'].includes(tabParam)) {
+    if (tabParam && ['dashboard', 'properties', 'leads', 'reviews', 'blogs', 'media', 'settings', 'utility', 'seo'].includes(tabParam)) {
       return tabParam as any;
     }
 
     if (hash.startsWith('#/admin/')) {
       const sub = hash.replace('#/admin/', '').trim();
-      if (['dashboard', 'properties', 'leads', 'reviews', 'blogs', 'media', 'settings', 'utility'].includes(sub)) {
+      if (['dashboard', 'properties', 'leads', 'reviews', 'blogs', 'media', 'settings', 'utility', 'seo'].includes(sub)) {
         return sub as any;
       }
     }
 
     if (path.startsWith('/admin/')) {
       const sub = path.replace('/admin/', '').trim();
-      if (['dashboard', 'properties', 'leads', 'reviews', 'blogs', 'media', 'settings', 'utility'].includes(sub)) {
+      if (['dashboard', 'properties', 'leads', 'reviews', 'blogs', 'media', 'settings', 'utility', 'seo'].includes(sub)) {
         return sub as any;
       }
     }
@@ -129,7 +129,7 @@ export default function App() {
             sub = path.replace('/admin/', '').trim();
           }
 
-          if (sub && ['dashboard', 'properties', 'leads', 'reviews', 'blogs', 'media', 'settings', 'utility'].includes(sub)) {
+          if (sub && ['dashboard', 'properties', 'leads', 'reviews', 'blogs', 'media', 'settings', 'utility', 'seo'].includes(sub)) {
             setAdminActiveSubTab(sub as any);
           } else {
             setAdminActiveSubTab('dashboard');

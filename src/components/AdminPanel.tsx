@@ -3,7 +3,7 @@ import {
   Lock, KeyRound, LayoutDashboard, Building2, HelpCircle, FileText, 
   MessageSquare, Image as ImageIcon, Settings, Database, Sparkles, Check, 
   Trash2, Edit, Plus, Upload, Copy, Save, LogOut, CheckCircle2, RefreshCw,
-  Search, Eye, Mail, Phone, Calendar, Download, FileUp, AlertTriangle
+  Search, Eye, Mail, Phone, Calendar, Download, FileUp, AlertTriangle, Globe
 } from 'lucide-react';
 import { Property, Lead, Review, Blog, MediaItem, AppSettings } from '../types';
 import { dbGetAll, dbPut, dbDelete, getSettings, saveSettings, DB_VERSION } from '../lib/db';
@@ -16,7 +16,7 @@ interface AdminPanelProps {
   media: MediaItem[];
   settings: AppSettings;
   onRefreshData: () => void;
-  activeSubTab?: 'dashboard' | 'properties' | 'leads' | 'reviews' | 'blogs' | 'media' | 'settings' | 'utility';
+  activeSubTab?: 'dashboard' | 'properties' | 'leads' | 'reviews' | 'blogs' | 'media' | 'settings' | 'utility' | 'seo';
 }
 
 export default function AdminPanel({ 
@@ -42,7 +42,7 @@ export default function AdminPanel({
   const [recoveryError, setRecoveryError] = useState('');
 
   // Active Admin tab
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'properties' | 'leads' | 'reviews' | 'blogs' | 'media' | 'settings' | 'utility'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'properties' | 'leads' | 'reviews' | 'blogs' | 'media' | 'settings' | 'utility' | 'seo'>('dashboard');
 
   useEffect(() => {
     if (activeSubTab && activeSubTab !== activeTab) {
@@ -776,7 +776,8 @@ export default function AdminPanel({
               { id: 'blogs', label: 'Campaign Blogs', icon: FileText },
               { id: 'media', label: 'Media Library', icon: ImageIcon },
               { id: 'settings', label: 'Layout Core', icon: Settings },
-              { id: 'utility', label: 'DB & SEO Expert', icon: Database }
+              { id: 'seo', label: 'SEO Utilities', icon: Globe },
+              { id: 'utility', label: 'Database Backup', icon: Database }
             ].map(tab => {
               const TabIcon = tab.icon;
               return (
@@ -1871,10 +1872,17 @@ export default function AdminPanel({
                   </div>
                 </div>
 
+              </div>
+            )}
+
+            {/* SUB-VIEW 9: SEO UTILITIES PANEL */}
+            {activeTab === 'seo' && (
+              <div className="space-y-6 font-sans text-xs">
+                
                 {/* DYNAMIC XML SITEMAP GENERATOR */}
                 <div className="bg-white dark:bg-[#0F1A2C] border border-gray-100 dark:border-gray-800 p-6 rounded-3xl shadow-sm space-y-4 text-left">
                   <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
-                    <Database className="h-5 w-5 text-[#C5A880]" />
+                    <Globe className="h-5 w-5 text-[#C5A880]" />
                     Enterprise XML Sitemap Engine
                   </h3>
                   <p className="text-xs text-gray-500 leading-relaxed">
@@ -1885,7 +1893,7 @@ export default function AdminPanel({
                       onClick={handleGenerateSitemap}
                       className="py-3 px-5 bg-[#0F1A2C] hover:bg-[#15233c] dark:bg-[#C5A880] dark:hover:bg-[#b8976d] text-white dark:text-[#090E16] rounded-xl font-bold uppercase tracking-wider text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all"
                     >
-                      <Database className="h-4 w-4 shrink-0" /> Crawl & Compile sitemap.xml
+                      <Globe className="h-4 w-4 shrink-0" /> Generate XML Sitemap
                     </button>
                   </div>
                 </div>
