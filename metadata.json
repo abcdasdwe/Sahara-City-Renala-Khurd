@@ -1,0 +1,6 @@
+{
+  "name": "Sahara City Renala Khurd Real Estate",
+  "description": "Premium Real Estate Agency and Admin Panel for Sahara City Renala Khurd, featuring plot listings, dynamic installment calculators, customer reviews, sitemaps, and secure local database backups.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
