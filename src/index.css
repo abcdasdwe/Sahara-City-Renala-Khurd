@@ -1,10 +1,53 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
+:root {
+    --bg-color: #F4F6F9;
+    --text-color: #111111;
+    --card-color: #FFFFFF;
+    --border-color: #E2E8F0;
+    --muted-color: #64748B;
+    --input-bg: #FFFFFF;
+    --input-border: #CBD5E1;
+    --primary-color: #A98E64;
+    --header-bg: rgba(255, 255, 255, 0.92);
+    --sidebar-bg: #FFFFFF;
+    --modal-bg: #FFFFFF;
+    --table-header-bg: #E2E8F0;
+    --table-row-hover: #F8FAFC;
+    --btn-text-color: #FFFFFF;
+}
+
+[data-theme="dark"] {
+    --bg-color: #090E16;
+    --text-color: #FFFFFF;
+    --card-color: #121B2A;
+    --border-color: #1E293B;
+    --muted-color: #94A3B8;
+    --input-bg: #1A2638;
+    --input-border: #2D3D52;
+    --primary-color: #C5A880;
+    --header-bg: rgba(9, 14, 22, 0.92);
+    --sidebar-bg: #121B2A;
+    --modal-bg: #121B2A;
+    --table-header-bg: #1A2638;
+    --table-row-hover: #1D2A3F;
+    --btn-text-color: #090E16;
+}
+
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Playfair Display", Georgia, serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+@variant dark ([data-theme="dark"] &);
+
+/* 5. Smooth transition effects styled globally */
+* {
+    transition: background-color .3s ease,
+                color .3s ease,
+                border-color .3s ease;
 }
 
 /* Custom smooth transition and fade-in animations */
@@ -15,4 +58,156 @@
 
 .animate-fade-in {
   animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ==========================================================================
+   CSS VARIABLE COMPONENT MAPPINGS (BODY, NAVBAR, FOOTER, CARDS, OTHERS)
+   ========================================================================== */
+
+/* 1. Body Styling */
+body {
+    background-color: var(--bg-color) !important;
+    color: var(--text-color) !important;
+}
+
+/* 2. Navbar Styling */
+nav, .navbar, .sticky-nav {
+    background-color: var(--header-bg) !important;
+    border-color: var(--border-color) !important;
+}
+nav *, .navbar * {
+    color: var(--text-color);
+}
+nav a:hover, nav button:hover, .navbar a:hover, .navbar button:hover {
+    color: var(--primary-color) !important;
+}
+
+/* Active navigation highlighted button style compatibility */
+nav button.bg-\[\#C5A880\], nav button.text-\[\#090E16\], 
+.navbar button.bg-\[\#C5A880\], .navbar button.text-\[\#090E16\] {
+    background-color: var(--primary-color) !important;
+    color: var(--btn-text-color) !important;
+}
+
+/* 3. Footer Styling */
+footer, .footer {
+    background-color: var(--header-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--muted-color) !important;
+}
+footer h3, footer h4, footer .brand-title {
+    color: var(--primary-color) !important;
+}
+footer p, footer span, footer a, footer button {
+    color: var(--text-color) !important;
+}
+footer a:hover, footer button:hover {
+    color: var(--primary-color) !important;
+}
+
+/* 4. General Cards layout */
+.card, .card-el, .bg-white, .dark\:bg-\[\#0F1A2C\], .dark\:bg-\[\#121B2A\] {
+    background-color: var(--card-color) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* 5. Tables Styling */
+table, .table {
+    border-color: var(--border-color) !important;
+}
+thead th, th {
+    background-color: var(--table-header-bg) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+}
+tbody td, td {
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+}
+tbody tr:hover, tr:hover {
+    background-color: var(--table-row-hover) !important;
+}
+
+/* 6. Forms & 7. Inputs */
+form {
+    color: var(--text-color) !important;
+}
+input, select, textarea {
+    background-color: var(--input-bg) !important;
+    color: var(--text-color) !important;
+    border-color: var(--input-border) !important;
+}
+input::placeholder, textarea::placeholder {
+    color: var(--muted-color) !important;
+    opacity: 0.8;
+}
+input:focus, select:focus, textarea:focus {
+    border-color: var(--primary-color) !important;
+    outline: none;
+}
+
+/* 8. Buttons Styling mapped to variables */
+.btn-primary, button.bg-slate-900, button.dark\:bg-\[\#C5A880\] {
+    background-color: var(--primary-color) !important;
+    color: var(--btn-text-color) !important;
+}
+.btn-secondary, button.bg-white\/5, button.bg-gray-100 {
+    background-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+
+/* 9. Sidebar styling */
+aside, .sidebar, .admin-sidebar {
+    background-color: var(--sidebar-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* 10. Dashboard panels */
+.dashboard-widget, .admin-dashboard, .dashboard-card {
+    background-color: var(--card-color) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+
+/* 11. Modals & Dialogs styling */
+.modal, .modal-content, [role="dialog"], .dialog-box {
+    background-color: var(--modal-bg) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* 12. Property Cards styling */
+.property-card, .property-item {
+    background-color: var(--card-color) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* 13. Blog Cards styling */
+.blog-card, .blog-item {
+    background-color: var(--card-color) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* 14. FAQ Section & wrapper layout */
+.faq-section, .faq-item, .faq-wrapper {
+    background-color: var(--card-color) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+
+/* Helper background/text overrides for complete accessibility */
+.text-gray-950, .text-slate-950, .text-gray-900, .text-slate-900, .text-gray-805, .text-gray-800, .text-slate-800, .text-gray-750, .text-gray-700, .text-slate-700, .text-gray-650, .text-gray-600, .text-slate-600, .text-slate-100, .text-\[\#F4F6F9\], .text-white {
+    color: var(--text-color) !important;
+}
+.text-gray-500, .text-gray-400, .text-slate-500, .text-slate-400, .text-\[\#C5A880\]\/80 {
+    color: var(--muted-color) !important;
+}
+.border-gray-100, .border-gray-200, .border-gray-300, .border-gray-800, .dark\:border-gray-800, .border-slate-200, .border-slate-800, .border-\[\#C5A880\]\/15 {
+    border-color: var(--border-color) !important;
+}
+.bg-\[\#F4F6F9\], .bg-\[\#090E16\], .bg-slate-50, .bg-gray-50, .bg-slate-100, .bg-gray-100 {
+    background-color: var(--bg-color) !important;
 }

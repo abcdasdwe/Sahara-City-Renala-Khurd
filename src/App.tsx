@@ -274,8 +274,10 @@ export default function App() {
     const root = window.document.documentElement;
     if (darkMode) {
       root.classList.add('dark');
+      root.setAttribute('data-theme', 'dark');
     } else {
       root.classList.remove('dark');
+      root.setAttribute('data-theme', 'light');
     }
     localStorage.setItem('sahara_dark_mode', String(darkMode));
   }, [darkMode]);
@@ -487,7 +489,7 @@ export default function App() {
                 <span className="inline-block border border-[#C5A880] text-[#C5A880] text-[10px] sm:text-xs font-bold uppercase tracking-widest py-1 px-4 rounded-full">
                   PREMIER LUXURY HOUSING SOCIETY
                 </span>
-                <h1 className="text-4xl sm:text-6xl font-black uppercase tracking-tight leading-tight">
+                <h1 id="hero-main-title" className="text-4xl sm:text-6xl font-black uppercase tracking-tight leading-tight text-[#e5f1e3]">
                   {settings.heroTitle}
                 </h1>
                 <p className="text-gray-300 max-w-xl mx-auto text-sm sm:text-base font-light">

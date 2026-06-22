@@ -118,13 +118,13 @@ export default function PropertyCompare({ properties, setCurrentTab, setSelected
             
             {/* Aspect: Mini Card Header with Images */}
             <div className="grid grid-cols-4 p-4 items-start">
-              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest self-center font-mono">Media Showcase</div>
+              <div style={{ color: '#e2e8ee' }} className="text-[10px] font-bold text-gray-400 uppercase tracking-widest self-center font-mono">Media Showcase</div>
               {/* Product A */}
               <div>
                 {p1 ? (
                   <div className="space-y-2 pr-4">
                     <img src={p1.images[0]} alt={p1.title} referrerPolicy="no-referrer" className="w-full h-24 object-cover rounded-xl border border-white/5 shadow-sm" />
-                    <h3 className="text-xs font-bold leading-tight line-clamp-2 text-white">{p1.title}</h3>
+                    <h3 style={{ color: '#eee1e1' }} className="text-xs font-bold leading-tight line-clamp-2 text-white">{p1.title}</h3>
                     <span className="text-[9px] font-bold tracking-widest uppercase bg-[#C5A880]/10 text-[#C5A880] border border-[#C5A880]/15 px-2 py-0.5 rounded font-mono">{p1.id}</span>
                   </div>
                 ) : <span className="text-gray-500 text-xs italic">Unselected</span>}
@@ -134,7 +134,7 @@ export default function PropertyCompare({ properties, setCurrentTab, setSelected
                 {p2 ? (
                   <div className="space-y-2 pr-4">
                     <img src={p2.images[0]} alt={p2.title} referrerPolicy="no-referrer" className="w-full h-24 object-cover rounded-xl border border-white/5 shadow-sm" />
-                    <h3 className="text-xs font-bold leading-tight line-clamp-2 text-white">{p2.title}</h3>
+                    <h3 style={{ color: '#f8f0f0' }} className="text-xs font-bold leading-tight line-clamp-2 text-white">{p2.title}</h3>
                     <span className="text-[9px] font-bold tracking-widest uppercase bg-sky-500/10 text-sky-400 border border-sky-500/15 px-2 py-0.5 rounded font-mono">{p2.id}</span>
                   </div>
                 ) : <span className="text-gray-500 text-xs italic">Unselected</span>}
@@ -147,7 +147,7 @@ export default function PropertyCompare({ properties, setCurrentTab, setSelected
                     <h3 className="text-xs font-bold leading-tight line-clamp-2 text-white">{p3.title}</h3>
                     <span className="text-[9px] font-bold tracking-widest uppercase bg-indigo-500/10 text-indigo-400 border border-indigo-500/15 px-2 py-0.5 rounded font-mono">{p3.id}</span>
                   </div>
-                ) : <span className="text-gray-500 text-xs italic">Unselected</span>}
+                ) : <span style={{ color: '#d1d9e4' }} className="text-gray-500 text-xs italic">Unselected</span>}
               </div>
             </div>
 
@@ -172,12 +172,12 @@ export default function PropertyCompare({ properties, setCurrentTab, setSelected
               <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5 font-mono"><Activity className="h-4 w-4 text-[#C5A880]" /> Sales Purpose</div>
               <div>
                 {p1 ? (
-                  <span className="inline-block px-2.5 py-1 text-[10px] tracking-wider uppercase rounded-full font-bold bg-[#C5A880]/15 text-[#C5A880]">{p1.purpose}</span>
+                  <span style={{ backgroundColor: '#f4eee6', color: '#7a603c' }} className="inline-block px-2.5 py-1 text-[10px] tracking-wider uppercase rounded-full font-bold">{p1.purpose}</span>
                 ) : '-'}
               </div>
               <div>
                 {p2 ? (
-                  <span className="inline-block px-2.5 py-1 text-[10px] tracking-wider uppercase rounded-full font-bold bg-sky-500/15 text-sky-450">{p2.purpose}</span>
+                  <span style={{ backgroundColor: '#cde0e8' }} className="inline-block px-2.5 py-1 text-[10px] tracking-wider uppercase rounded-full font-bold text-sky-450">{p2.purpose}</span>
                 ) : '-'}
               </div>
               <div>
@@ -190,8 +190,8 @@ export default function PropertyCompare({ properties, setCurrentTab, setSelected
             {/* Aspect: Area */}
             <div className="grid grid-cols-4 p-4 text-xs font-semibold">
               <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5 font-mono"><Maximize2 className="h-4 w-4 text-[#C5A880]" /> Land Area</div>
-              <div className="text-white font-bold font-mono">{p1 ? p1.area : '-'}</div>
-              <div className="text-white font-bold font-mono">{p2 ? p2.area : '-'}</div>
+              <div style={{ color: '#f1e3e3' }} className="font-bold font-mono">{p1 ? p1.area : '-'}</div>
+              <div style={{ color: '#e1d1d1' }} className="font-bold font-mono">{p2 ? p2.area : '-'}</div>
               <div className="text-white font-bold font-mono">{p3 ? p3.area : '-'}</div>
             </div>
 
