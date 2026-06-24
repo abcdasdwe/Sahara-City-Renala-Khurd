@@ -1,5 +1,5 @@
 <div align="center">
-<img width="200" height="200" alt="Sahara Developers Logo" src="https://raw.githubusercontent.com/abcdasdwe/Sahara-City-Renala-Khurd/main/assets/logo.svg" />
+<img width="200" height="200" alt="Sahara Developers Logo" src="./assets/logo.svg" />
 </div>
 
 # Run and deploy your AI Studio app
