@@ -1,5 +1,5 @@
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
+<img width="200" height="200" alt="Sahara Developers Logo" src="https://raw.githubusercontent.com/abcdasdwe/Sahara-City-Renala-Khurd/main/assets/logo.svg" />
 </div>
 
 # Run and deploy your AI Studio app
