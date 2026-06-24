@@ -39,8 +39,8 @@ export default function Navbar({ currentTab, setCurrentTab, darkMode, setDarkMod
           
           {/* Logo Brand Panel */}
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleNavClick('home')}>
-            <div className="p-2 rounded-lg bg-gradient-to-br from-[#0F1A2C] to-[#C5A880]/20 border border-[#C5A880]/40 shadow-lg">
-              <Building2 className="h-5.5 w-5.5 text-[#C5A880]" />
+            <div className="p-1 rounded-full bg-gradient-to-br from-[#0F1A2C] to-[#C5A880]/20 border border-[#C5A880]/40 shadow-lg overflow-hidden flex items-center justify-center">
+              <img src="/logo.png" alt="Sahara Developers Logo" className="h-8 w-8 object-contain rounded-full" referrerPolicy="no-referrer" />
             </div>
             <div>
               <span className="block font-serif text-xl font-bold uppercase tracking-widest text-[#F4F6F9]">

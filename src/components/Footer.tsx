@@ -34,8 +34,8 @@ export default function Footer({ setCurrentTab, contactAddress, contactPhone, co
           {/* Column 1: Brand details & brief intro */}
           <div className="space-y-4">
             <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => handleLinkClick('home')}>
-              <div className="p-2 rounded-lg bg-[#C5A880]/10 border border-[#C5A880]/50 inline-block">
-                <Building2 className="h-5 w-5 text-[#C5A880]" />
+              <div className="p-1 rounded-full bg-[#C5A880]/10 border border-[#C5A880]/50 inline-flex items-center justify-center">
+                <img src="/logo.png" alt="Sahara Developers Logo" className="h-6 w-6 object-contain rounded-full" referrerPolicy="no-referrer" />
               </div>
               <span className="font-serif text-lg font-bold uppercase tracking-widest text-[#F4F6F9]">
                 Sahara <span className="text-[#C5A880] italic font-medium">City</span>

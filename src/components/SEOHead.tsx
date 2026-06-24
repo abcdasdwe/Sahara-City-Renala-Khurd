@@ -23,7 +23,7 @@ export default function SEOHead({ view, property, blog }: SEOHeadProps) {
       'alternateName': 'Sahara City Property Dealers',
       'description': 'A premium, modern housing society on the main N5 highway in Renala Khurd offering world-class amenities, premium parks, schools, and secure gated residential and commercial plots.',
       'url': baseSchemaUrl,
-      'logo': 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=200',
+      'logo': window.location.origin + '/logo.png',
       'contactPoint': {
         '@type': 'ContactPoint',
         'telephone': '+92-321-2099125',
