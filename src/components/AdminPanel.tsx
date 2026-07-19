@@ -41,6 +41,13 @@ export default function AdminPanel({
   const [recoveryInput, setRecoveryInput] = useState('');
   const [recoveryError, setRecoveryError] = useState('');
 
+  // Panel-specific Change Password states
+  const [panelCurrentPassword, setPanelCurrentPassword] = useState('');
+  const [panelNewPassword, setPanelNewPassword] = useState('');
+  const [panelConfirmPassword, setPanelConfirmPassword] = useState('');
+  const [panelRecoveryQuestion, setPanelRecoveryQuestion] = useState('What was your first school name in Renala Khurd?');
+  const [panelRecoveryAnswer, setPanelRecoveryAnswer] = useState('');
+
   // Active Admin tab
   const [activeTab, setActiveTab] = useState<'dashboard' | 'properties' | 'leads' | 'reviews' | 'blogs' | 'media' | 'settings' | 'utility' | 'seo'>('dashboard');
 
@@ -100,6 +107,11 @@ export default function AdminPanel({
     if (!firstLoginDone) {
       setIsFirstLogin(true);
     }
+
+    const savedQ = localStorage.getItem('sahara_admin_recovery_question');
+    if (savedQ) setPanelRecoveryQuestion(savedQ);
+    const savedAns = localStorage.getItem('sahara_admin_recovery_answer');
+    if (savedAns) setPanelRecoveryAnswer(savedAns);
   }, []);
 
   const triggerToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
@@ -157,6 +169,42 @@ export default function AdminPanel({
     
     setIsFirstLogin(false);
     triggerToast('Administrator Credentials Secured! Password Changed Successfully.', 'success');
+  };
+
+  // Change Password from Settings Panel
+  const handlePanelPasswordChange = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const defaultPasswordHash = hashPassword('admin123');
+    const savedPasswordHash = localStorage.getItem('sahara_admin_password_hash') || defaultPasswordHash;
+
+    if (hashPassword(panelCurrentPassword) !== savedPasswordHash) {
+      triggerToast('Incorrect current password. Change failed.', 'error');
+      return;
+    }
+
+    if (panelNewPassword !== panelConfirmPassword) {
+      triggerToast('New passwords do not match.', 'error');
+      return;
+    }
+
+    if (panelNewPassword.length < 6) {
+      triggerToast('New password must be at least 6 characters long.', 'error');
+      return;
+    }
+
+    const hashed = hashPassword(panelNewPassword);
+    localStorage.setItem('sahara_admin_password_hash', hashed);
+    localStorage.setItem('sahara_admin_recovery_question', panelRecoveryQuestion);
+    localStorage.setItem('sahara_admin_recovery_answer', panelRecoveryAnswer.toLowerCase().trim());
+    localStorage.setItem('sahara_first_login_done', 'true');
+
+    // Reset input fields
+    setPanelCurrentPassword('');
+    setPanelNewPassword('');
+    setPanelConfirmPassword('');
+
+    triggerToast('Password and recovery settings updated successfully!', 'success');
   };
 
   // Recover Password
@@ -1197,14 +1245,36 @@ export default function AdminPanel({
                     {/* Image links */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-sans">
                       <div>
-                        <label className="block font-bold text-gray-500 uppercase tracking-widest mb-1">Image URL (Unsplash or Local)</label>
-                        <input
-                          type="text"
-                          required
-                          value={editingProperty.images?.[0] || ''}
-                          onChange={(e) => setEditingProperty({ ...editingProperty, images: [e.target.value] })}
-                          className="w-full bg-gray-50 dark:bg-black/30 border border-gray-200 dark:border-gray-805 rounded-xl py-2 px-3"
-                        />
+                        <label className="block font-bold text-gray-500 uppercase tracking-widest mb-1">Property Photo File</label>
+                        <div className="flex items-center gap-2.5">
+                          {editingProperty.images?.[0] && (
+                            <img
+                              src={editingProperty.images[0]}
+                              alt="Property Thumbnail"
+                              className="h-10 w-10 object-cover rounded-xl border border-gray-250 dark:border-gray-800"
+                              referrerPolicy="no-referrer"
+                            />
+                          )}
+                          <label className="flex-1 flex items-center justify-center gap-2 py-2 px-3 border border-dashed border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-gray-500 font-semibold text-center transition-colors">
+                            <Upload className="h-4 w-4" />
+                            <span>Select Photo</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  const reader = new FileReader();
+                                  reader.onloadend = () => {
+                                    setEditingProperty({ ...editingProperty, images: [reader.result as string] });
+                                  };
+                                  reader.readAsDataURL(file);
+                                }
+                              }}
+                            />
+                          </label>
+                        </div>
                       </div>
                       <div>
                         <label className="block font-bold text-gray-500 uppercase tracking-widest mb-1">Google Maps Embedded Source</label>
@@ -1554,13 +1624,36 @@ export default function AdminPanel({
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-gray-400 uppercase">Media Banner Link</label>
-                        <input
-                          type="text"
-                          value={editingBlog.image || ''}
-                          onChange={(e) => setEditingBlog({ ...editingBlog, image: e.target.value })}
-                          className="w-full bg-gray-50 dark:bg-black/30 border border-gray-200 dark:border-gray-800 rounded-xl py-2 px-3"
-                        />
+                        <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Media Banner Photo</label>
+                        <div className="flex items-center gap-2">
+                          {editingBlog.image && (
+                            <img
+                              src={editingBlog.image}
+                              alt="Blog Thumbnail"
+                              className="h-9 w-9 object-cover rounded-lg border border-gray-200 dark:border-gray-800"
+                              referrerPolicy="no-referrer"
+                            />
+                          )}
+                          <label className="flex-1 flex items-center justify-center gap-2 py-2 px-3 border border-dashed border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-gray-500 font-semibold text-center transition-colors">
+                            <Upload className="h-4 w-4" />
+                            <span>Select Image</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  const reader = new FileReader();
+                                  reader.onloadend = () => {
+                                    setEditingBlog({ ...editingBlog, image: reader.result as string });
+                                  };
+                                  reader.readAsDataURL(file);
+                                }
+                              }}
+                            />
+                          </label>
+                        </div>
                       </div>
                     </div>
 
@@ -1734,101 +1827,177 @@ export default function AdminPanel({
                 </div>
 
               </div>
-            )}
-
-            {/* SUB-VIEW 7: APP SETTINGS PANEL */}
+            )}            {/* SUB-VIEW 7: APP SETTINGS PANEL */}
             {activeTab === 'settings' && (
-              <form onSubmit={handleSaveSettings} className="bg-white dark:bg-[#0F1A2C] border border-gray-100 dark:border-gray-800 p-6 rounded-3xl shadow-sm text-xs font-sans space-y-4">
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider pb-3 border-b border-gray-100 dark:border-gray-800 mb-2">
-                  Front Website Layout Controls
-                </h3>
+              <div className="space-y-6">
+                <form onSubmit={handleSaveSettings} className="bg-white dark:bg-[#0F1A2C] border border-gray-100 dark:border-gray-800 p-6 rounded-3xl shadow-sm text-xs font-sans space-y-4">
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider pb-3 border-b border-gray-100 dark:border-gray-800 mb-2">
+                    Front Website Layout Controls
+                  </h3>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Company Primary Landline</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Company Primary Landline</label>
+                      <input
+                        type="text"
+                        required
+                        value={settings.contactPhone}
+                        onChange={(e) => saveSettings({ ...settings, contactPhone: e.target.value })}
+                        className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">WhatsApp Business Key (+92...)</label>
+                      <input
+                        type="text"
+                        required
+                        value={settings.whatsappNumber}
+                        onChange={(e) => saveSettings({ ...settings, whatsappNumber: e.target.value })}
+                        className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Official Sales Email</label>
+                      <input
+                        type="email"
+                        required
+                        value={settings.contactEmail}
+                        onChange={(e) => saveSettings({ ...settings, contactEmail: e.target.value })}
+                        className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Primary Office Physical Coordinates</label>
+                      <input
+                        type="text"
+                        required
+                        value={settings.contactAddress}
+                        onChange={(e) => saveSettings({ ...settings, contactAddress: e.target.value })}
+                        className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase">Banner Headline Title</label>
                     <input
                       type="text"
                       required
-                      value={settings.contactPhone}
-                      onChange={(e) => saveSettings({ ...settings, contactPhone: e.target.value })}
-                      className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3"
+                      value={settings.heroTitle}
+                      onChange={(e) => saveSettings({ ...settings, heroTitle: e.target.value })}
+                      className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3 font-semibold"
                     />
                   </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">WhatsApp Business Key (+92...)</label>
+
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase">Banner Subtitle</label>
                     <input
                       type="text"
                       required
-                      value={settings.whatsappNumber}
-                      onChange={(e) => saveSettings({ ...settings, whatsappNumber: e.target.value })}
-                      className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3 focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Official Sales Email</label>
-                    <input
-                      type="email"
-                      required
-                      value={settings.contactEmail}
-                      onChange={(e) => saveSettings({ ...settings, contactEmail: e.target.value })}
+                      value={settings.heroSubtitle}
+                      onChange={(e) => saveSettings({ ...settings, heroSubtitle: e.target.value })}
                       className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3"
                     />
                   </div>
-                  <div>
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Primary Office Physical Coordinates</label>
-                    <input
-                      type="text"
+
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase">Interactive Corporate Bio Description</label>
+                    <textarea
+                      rows={4}
                       required
-                      value={settings.contactAddress}
-                      onChange={(e) => saveSettings({ ...settings, contactAddress: e.target.value })}
-                      className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3"
-                    />
+                      value={settings.companyAboutText}
+                      onChange={(e) => saveSettings({ ...settings, companyAboutText: e.target.value })}
+                      className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-850 rounded-xl p-3"
+                    ></textarea>
                   </div>
-                </div>
 
-                <div className="space-y-1">
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase">Banner Headline Title</label>
-                  <input
-                    type="text"
-                    required
-                    value={settings.heroTitle}
-                    onChange={(e) => saveSettings({ ...settings, heroTitle: e.target.value })}
-                    className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3 font-semibold"
-                  />
-                </div>
+                  <button
+                    type="submit"
+                    className="w-full bg-[#0F1A2C] hover:bg-slate-900 dark:bg-[#C5A880] dark:hover:bg-[#b8976d] text-white dark:text-[#090E16] font-bold py-3.5 rounded-xl uppercase tracking-wider cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <Check className="h-4.5 w-4.5" /> Synchronize Site Core Properties
+                  </button>
+                </form>
 
-                <div className="space-y-1">
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase">Banner Subtitle</label>
-                  <input
-                    type="text"
-                    required
-                    value={settings.heroSubtitle}
-                    onChange={(e) => saveSettings({ ...settings, heroSubtitle: e.target.value })}
-                    className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3"
-                  />
-                </div>
+                {/* Change Operator Password Form */}
+                <form onSubmit={handlePanelPasswordChange} className="bg-white dark:bg-[#0F1A2C] border border-gray-100 dark:border-gray-800 p-6 rounded-3xl shadow-sm text-xs font-sans space-y-4">
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider pb-3 border-b border-gray-100 dark:border-gray-800 mb-2 flex items-center gap-2">
+                    <KeyRound className="h-4.5 w-4.5 text-[#C5A880]" />
+                    Change Operator Access Password
+                  </h3>
 
-                <div className="space-y-1">
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase">Interactive Corporate Bio Description</label>
-                  <textarea
-                    rows={4}
-                    required
-                    value={settings.companyAboutText}
-                    onChange={(e) => saveSettings({ ...settings, companyAboutText: e.target.value })}
-                    className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-805 rounded-xl p-3"
-                  ></textarea>
-                </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Current Password</label>
+                      <input
+                        type="password"
+                        required
+                        value={panelCurrentPassword}
+                        onChange={(e) => setPanelCurrentPassword(e.target.value)}
+                        placeholder="Current password"
+                        className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">New Secure Password</label>
+                      <input
+                        type="password"
+                        required
+                        value={panelNewPassword}
+                        onChange={(e) => setPanelNewPassword(e.target.value)}
+                        placeholder="Min. 6 characters"
+                        className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Confirm New Password</label>
+                      <input
+                        type="password"
+                        required
+                        value={panelConfirmPassword}
+                        onChange={(e) => setPanelConfirmPassword(e.target.value)}
+                        placeholder="Confirm new password"
+                        className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3"
+                      />
+                    </div>
+                  </div>
 
-                <button
-                  type="submit"
-                  className="w-full bg-[#0F1A2C] hover:bg-slate-900 dark:bg-[#C5A880] dark:hover:bg-[#b8976d] text-white dark:text-[#090E16] font-bold py-3.5 rounded-xl uppercase tracking-wider cursor-pointer flex items-center justify-center gap-1.5"
-                >
-                  <Check className="h-4.5 w-4.5" /> Synchronize Site Core Properties
-                </button>
-              </form>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Custom Security Recovery Question</label>
+                      <input
+                        type="text"
+                        required
+                        value={panelRecoveryQuestion}
+                        onChange={(e) => setPanelRecoveryQuestion(e.target.value)}
+                        placeholder="e.g. What is your favorite childhood pet's name?"
+                        className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Security Recovery Answer</label>
+                      <input
+                        type="text"
+                        required
+                        value={panelRecoveryAnswer}
+                        onChange={(e) => setPanelRecoveryAnswer(e.target.value)}
+                        placeholder="Secret response word"
+                        className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full bg-[#0F1A2C] hover:bg-slate-900 dark:bg-[#C5A880] dark:hover:bg-[#b8976d] text-white dark:text-[#090E16] font-bold py-3.5 rounded-xl uppercase tracking-wider cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <Check className="h-4.5 w-4.5" /> Save New Access Password
+                  </button>
+                </form>
+              </div>
             )}
 
             {/* SUB-VIEW 8: UTILITIES PANEL */}
