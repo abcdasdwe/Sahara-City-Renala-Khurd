@@ -490,7 +490,7 @@ export default function App() {
                   PREMIER LUXURY HOUSING SOCIETY
                 </span>
                 <h1 id="hero-main-title" className="text-4xl sm:text-6xl font-black uppercase tracking-tight leading-tight text-[#e5f1e3]">
-                  {settings.heroTitle}
+                  Sahara Business City
                 </h1>
                 <p className="text-gray-300 max-w-xl mx-auto text-sm sm:text-base font-light">
                   {settings.heroSubtitle}
@@ -509,8 +509,6 @@ export default function App() {
                       <option value="All">All Categories</option>
                       <option value="Residential Plot">Residential Plots</option>
                       <option value="Commercial Plot">Commercial Plots</option>
-                      <option value="House font">Houses</option>
-                      <option value="Villa">Luxury Villas</option>
                     </select>
                   </div>
 
@@ -522,7 +520,6 @@ export default function App() {
                     >
                       <option value="All">All Offerings</option>
                       <option value="For Sale">For Sale (Cash)</option>
-                      <option value="For Rent">Required Rental</option>
                       <option value="Installment">Easy Installments</option>
                     </select>
                   </div>
@@ -657,7 +654,7 @@ export default function App() {
                   </div>
                   <div>
                     <h3 className="text-4xl font-extrabold text-[#C5A880]">{properties.length}+</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-widest font-bold">VIP Plots & Villas</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-widest font-bold">VIP Property Plots</p>
                   </div>
                   <div>
                     <h3 className="text-4xl font-extrabold text-indigo-500">100%</h3>
@@ -717,7 +714,7 @@ export default function App() {
 
               <div className="max-w-4xl mx-auto px-4 space-y-5 relative z-10">
                 <h3 className="text-2xl sm:text-4xl font-extrabold uppercase tracking-tight">
-                  Discover Plots & Villas on Easy Month Installments
+                  Discover Premium Plots on Easy Monthly Installments
                 </h3>
                 <p className="text-gray-300 max-w-xl mx-auto text-xs sm:text-sm font-light">
                   Use our interactive calculator online to find the required down payments, monthly splits. No bank verification needed. Direct transfers.
@@ -831,8 +828,6 @@ export default function App() {
                     <option value="All">All Categories</option>
                     <option value="Residential Plot">Residential Plot</option>
                     <option value="Commercial Plot">Commercial Plot</option>
-                    <option value="House">House</option>
-                    <option value="Villa">Villa</option>
                   </select>
                 </div>
 
@@ -845,7 +840,6 @@ export default function App() {
                   >
                     <option value="All">All Mechanisms</option>
                     <option value="For Sale">For Sale (Cash)</option>
-                    <option value="For Rent">Rentals</option>
                     <option value="Installment">Installments</option>
                   </select>
                 </div>

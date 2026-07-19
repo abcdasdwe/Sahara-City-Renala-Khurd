@@ -44,10 +44,7 @@ export default function Navbar({ currentTab, setCurrentTab, darkMode, setDarkMod
             </div>
             <div>
               <span className="block font-serif text-xl font-bold uppercase tracking-widest text-[#F4F6F9]">
-                Sahara <span className="text-[#C5A880] italic font-medium">City</span>
-              </span>
-              <span className="block font-sans text-[9px] uppercase tracking-[0.25em] text-[#C5A880]/80 -mt-0.5 font-medium">
-                Renala Khurd
+                Sahara <span className="text-[#C5A880] italic font-medium">Developers</span>
               </span>
             </div>
           </div>

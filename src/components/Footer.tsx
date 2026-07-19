@@ -38,7 +38,7 @@ export default function Footer({ setCurrentTab, contactAddress, contactPhone, co
                 <img src="/logo.png" alt="Sahara Developers Logo" className="h-6 w-6 object-contain rounded-full" referrerPolicy="no-referrer" />
               </div>
               <span className="font-serif text-lg font-bold uppercase tracking-widest text-[#F4F6F9]">
-                Sahara <span className="text-[#C5A880] italic font-medium">City</span>
+                Sahara <span className="text-[#C5A880] italic font-medium">Developers</span>
               </span>
             </div>
             

@@ -1039,9 +1039,6 @@ export default function AdminPanel({
                         >
                           <option value="Residential Plot">Residential Plot</option>
                           <option value="Commercial Plot">Commercial Plot</option>
-                          <option value="House">House</option>
-                          <option value="Villa">Villa</option>
-                          <option value="Apartment">Apartment</option>
                         </select>
                       </div>
                       <div>
@@ -1052,7 +1049,6 @@ export default function AdminPanel({
                           className="w-full bg-gray-50 dark:bg-black/30 border border-gray-200 dark:border-gray-800 rounded-xl py-2 px-3 font-semibold"
                         >
                           <option value="For Sale">For Sale Cash</option>
-                          <option value="For Rent">For Rent</option>
                           <option value="Installment">Installment</option>
                         </select>
                       </div>
@@ -1087,7 +1083,6 @@ export default function AdminPanel({
                           <option value="Available">Available</option>
                           <option value="Sold">Sold</option>
                           <option value="Reserved">Reserved</option>
-                          <option value="Rented">Rented</option>
                           <option value="Featured">Featured</option>
                           <option value="New Listing">New Listing</option>
                         </select>

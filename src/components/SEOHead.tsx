@@ -10,7 +10,7 @@ interface SEOHeadProps {
 export default function SEOHead({ view, property, blog }: SEOHeadProps) {
   useEffect(() => {
     let title = 'Sahara City Renala Khurd | Premium Real Estate Gated Community';
-    let description = 'Discover residential and commercial plots for sale in Sahara City Renala Khurd. Houses and luxury villas on easy monthly installment plans with 24/7 high-level gating.';
+    let description = 'Discover residential and commercial plots for sale in Sahara City Renala Khurd on easy monthly installment plans with 24/7 high-level gating.';
     let schemaMarkup: object | null = null;
 
     const baseSchemaUrl = window.location.href;
@@ -97,8 +97,8 @@ export default function SEOHead({ view, property, blog }: SEOHeadProps) {
         break;
 
       case 'properties':
-        title = 'Plots & Houses for Sale in Renala Khurd | Sahara City';
-        description = 'Explore commercial & residential plots or luxury villas in Renala Khurd. Complete specifications, down payment budgets, and flexible installments.';
+        title = 'Plots for Sale in Renala Khurd | Sahara City';
+        description = 'Explore commercial & residential plots in Renala Khurd. Complete specifications, down payment budgets, and flexible installments.';
         schemaMarkup = {
           '@context': 'https://schema.org',
           '@type': 'SearchResultsPage',
@@ -106,7 +106,7 @@ export default function SEOHead({ view, property, blog }: SEOHeadProps) {
             '@type': 'ItemList',
             'itemListElement': [
               { '@type': 'ListItem', 'position': 1, 'name': '5 Marla Residential Plot' },
-              { '@type': 'ListItem', 'position': 2, 'name': 'Luxury 5 Marla Villa' },
+              { '@type': 'ListItem', 'position': 2, 'name': '10 Marla Residential Plot' },
               { '@type': 'ListItem', 'position': 3, 'name': '4 Marla Commercial Plot' }
             ]
           }

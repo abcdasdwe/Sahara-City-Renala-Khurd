@@ -94,7 +94,7 @@ export async function getSettings(): Promise<AppSettings> {
 
   // Default app settings matching prompt and screenshot details
   const defaultSettings: AppSettings = {
-    heroTitle: 'Welcome to Sahara City Renala Khurd',
+    heroTitle: 'Sahara Business City',
     heroSubtitle: 'Luxurious Living & Secure Investments in Punjab\'s Most Modern Housing Society',
     heroBackground: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=1600',
     contactAddress: 'House # 130, Sahara city, Renala Khurd, Okara, Punjab, Pakistan',
@@ -107,7 +107,7 @@ export async function getSettings(): Promise<AppSettings> {
     twitterUrl: 'https://twitter.com/saharacityrk',
     youtubeUrl: 'https://youtube.com/saharacityrenala',
     seoDefaultTitle: 'Sahara City Renala Khurd | Premium Real Estate Gated Community & Plots',
-    seoDefaultDescription: 'Discover residential & commercial plots for sale in Sahara City Renala Khurd. Luxury houses, villas on easy monthly installment plans with 24/7 security & top-tier amenities.',
+    seoDefaultDescription: 'Discover residential & commercial plots for sale in Sahara City Renala Khurd on easy monthly installment plans with 24/7 security & top-tier amenities.',
     footerCopyrightText: '© 2026 Sahara City Renala Khurd. All Rights Reserved. Designed for upscale lifestyle & secure investments.'
   };
 
@@ -158,20 +158,19 @@ export async function seedDatabaseIfEmpty() {
       views: 145
     },
     {
-      id: 'SC-V02',
-      title: 'Luxury 3-Bedroom Villa (5 Marla - Furnished Model)',
-      description: 'Elegant custom-built 5 Marla contemporary double-story villa. Key design details feature premium Spanish tiles, standard Turkish sanitation units, luxury kitchen woodwork, high ceiling drawing rooms, secure car porch, and direct terrace overlooking green gardens. Full underground grid connection and smart water filtration.',
-      price: 9500000,
+      id: 'SC-P02',
+      title: 'Premium 5 Marla Residential Plot - Corner Block',
+      description: 'Elegant corner-facing 5 Marla (approx. 1125 sq ft) residential plot. Key design details feature premium road connectivity, standard water connection lines, corner boundary walls, and direct frontage overlooking green gardens. Full underground grid connection and smart water filtration.',
+      price: 2200000,
       city: 'Renala Khurd',
       area: '5 Marla',
-      bedrooms: 3,
-      bathrooms: 4,
-      propertyType: 'Villa',
+      bedrooms: 0,
+      bathrooms: 0,
+      propertyType: 'Residential Plot',
       purpose: 'For Sale',
       images: [
-        'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800',
-        'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800',
-        'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&q=80&w=800'
+        'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=800',
+        'https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?auto=format&fit=crop&q=80&w=800'
       ],
       mapLocation: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3429.2885973942007!2d73.5960011!3d30.7380998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39229be4949a2a3f%3A0xe679237077a76e0d!2sSahara%20City%20Renala%20Khurd!5e0!3m2!1sen!2spk!4v1700000000000!5m2!1sen!2spk',
       status: 'New Listing',
@@ -235,22 +234,29 @@ export async function seedDatabaseIfEmpty() {
       views: 189
     },
     {
-      id: 'SC-H05',
-      title: 'Modern 10 Marla Executive Villa For Rent',
-      description: 'Newly constructed double-story luxury home is now up for rental. Centered on executive specifications: 5 complete en-suite bedrooms, dual designer drawing rooms, 2 lavish modern marble kitchens, private servant room, high security perimeter wire, massive terrace showcasing Anwar Shaheed Colony views, premium location.',
-      price: 65000,
+      id: 'SC-P05',
+      title: 'Modern 10 Marla Executive Residential Plot - Block A',
+      description: 'Exclusive, premier 10 Marla residential plot located in the highly desired Block A. Key developmental details: paved wide double-roads, immediate underground power connection lines, close proximity to family parks and Jogging Tracks. Perfect layout for a spacious dream family residence.',
+      price: 3600000,
       city: 'Renala Khurd',
       area: '10 Marla',
-      bedrooms: 5,
-      bathrooms: 6,
-      propertyType: 'House',
-      purpose: 'For Rent',
+      bedrooms: 0,
+      bathrooms: 0,
+      propertyType: 'Residential Plot',
+      purpose: 'Installment',
       images: [
         'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&q=80&w=800',
         'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&q=80&w=800'
       ],
       mapLocation: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3429.2885973942007!2d73.5960011!3d30.7380998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39229be4949a2a3f%3A0xe679237077a76e0d!2sSahara%20City%20Renala%20Khurd!5e0!3m2!1sen!2spk!4v1700000000000!5m2!1sen!2spk',
       status: 'Available',
+      installmentDetails: {
+        downPayment: 650000,
+        monthlyInstallment: 35000,
+        quarterlyInstallment: 180000,
+        totalInstallments: 36,
+        possessionDate: '2027-06-30'
+      },
       availabilityCalendar: {
         '2026-07-01': 'Vacant'
       },
@@ -415,12 +421,12 @@ Plot buyers are invited to schedule their physical site allocation checks and re
     },
     {
       id: 'lead-02',
-      propertyId: 'SC-V02',
-      propertyName: 'Luxury 3-Bedroom Villa (5 Marla - Furnished Model)',
+      propertyId: 'SC-P02',
+      propertyName: 'Premium 5 Marla Residential Plot - Corner Block',
       customerName: 'Dr. Amna Shahzadi',
       customerEmail: 'amna.sh1596@gmail.com',
       customerPhone: '0312 9876543',
-      message: 'Can I schedule a physical site visit to the furnished model villa on Saturday around 11:00 AM? Please confirm if any agent will be available at House #130.',
+      message: 'Can I schedule a physical site visit to the 5 Marla corner plot on Saturday around 11:00 AM? Please confirm if any agent will be available at House #130.',
       status: 'Contacted',
       createdDate: '2026-06-20'
     },
@@ -441,20 +447,20 @@ Plot buyers are invited to schedule their physical site allocation checks and re
 
   // Seed Settings
   const settings: AppSettings = {
-    heroTitle: 'Welcome to Sahara City Renala Khurd',
+    heroTitle: 'Sahara Business City',
     heroSubtitle: 'Luxurious Living & Secure Investments in Punjab\'s Most Modern Housing Society',
     heroBackground: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=1600',
     contactAddress: 'House # 130, Sahara city, Renala Khurd, Okara, Punjab, Pakistan',
     contactEmail: 'info@saharacityrenala.com',
     contactPhone: '0321 2099125',
     whatsappNumber: '+923212099125',
-    companyAboutText: 'Sahara City Renala Khurd is a premier gated community offering a gold-standard lifestyle. Highlights include 24/7 security with professional gating, wide carpeted double-roads, underground electricity wires, clean tap water, and beautiful green community parks with children play sections. We host top-class planning for residential and commercial plots alongside custom villas on extremely straightforward, interest-free monthly installment modes.',
+    companyAboutText: 'Sahara City Renala Khurd is a premier gated community offering a gold-standard lifestyle. Highlights include 24/7 security with professional gating, wide carpeted double-roads, underground electricity wires, clean tap water, and beautiful green community parks with children play sections. We host top-class planning for residential and commercial plots on extremely straightforward, interest-free monthly installment modes.',
     facebookUrl: 'https://facebook.com/SaharaCityRenalaKhurdOfficial',
     instagramUrl: 'https://instagram.com/saharacityrenala',
     twitterUrl: 'https://twitter.com/saharacityrk',
     youtubeUrl: 'https://youtube.com/saharacityrenala',
     seoDefaultTitle: 'Sahara City Renala Khurd | Premium Gated Society Real Estate & Plots',
-    seoDefaultDescription: 'Browse the ultimate residential and commercial plots in Sahara City Renala Khurd. Houses and villas on attractive installment layouts. Secure gated living, schools, Mosque and pristine parks.',
+    seoDefaultDescription: 'Browse the ultimate residential and commercial plots in Sahara City Renala Khurd on attractive installment layouts. Secure gated living, schools, Mosque and pristine parks.',
     footerCopyrightText: '© 2026 Sahara City Renala Khurd. All Rights Reserved. Designed for upscale lifestyle & secure investments.'
   };
   await dbPut('settings', { key: 'config', value: settings });
@@ -479,7 +485,7 @@ Plot buyers are invited to schedule their physical site allocation checks and re
     },
     {
       id: 'med-03',
-      name: 'Model Villa Front View',
+      name: 'Model Plot Corner View',
       category: 'Residential',
       url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800',
       uploadedDate: '2026-06-04',
