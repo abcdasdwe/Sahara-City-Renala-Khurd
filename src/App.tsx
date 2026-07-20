@@ -272,8 +272,8 @@ export default function App() {
 
       if (s) {
         const bg = s.heroBackground;
-        const isValidBg = bg && bg.trim() !== '' && !bg.includes('unsplash.com') && (bg.startsWith('/') || bg.startsWith('data:') || bg.startsWith('blob:') || bg.startsWith('http'));
-        if (!isValidBg || bg.includes('unsplash.com') || bg.includes('photo-1564013799919-ab600027ffc6')) {
+        const isValidBg = bg && bg.trim() !== '' && (bg.startsWith('/') || bg.startsWith('data:') || bg.startsWith('blob:') || bg.startsWith('http'));
+        if (!isValidBg) {
           s.heroBackground = '/sahara-bg.jpg';
           await saveSettings(s);
         }
