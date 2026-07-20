@@ -77,6 +77,14 @@ export default function AdminPanel({
     category: 'Residential' | 'Commercial' | 'Parks' | 'Mosque' | 'Development' | 'General';
     preview: string;
   }[]>([]);
+
+  const [localSettings, setLocalSettings] = useState<AppSettings | null>(null);
+
+  useEffect(() => {
+    if (settings) {
+      setLocalSettings(settings);
+    }
+  }, [settings]);
   
   // Generated SEO mockup states
   const [seoPresetPropertyId, setSeoPresetPropertyId] = useState('');
@@ -357,9 +365,11 @@ export default function AdminPanel({
   // Local Settings updates
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
-    await saveSettings(settings);
-    triggerToast('App Configuration updated on public website instantly!', 'success');
-    onRefreshData();
+    if (localSettings) {
+      await saveSettings(localSettings);
+      triggerToast('App Configuration updated on public website instantly!', 'success');
+      onRefreshData();
+    }
   };
 
   // Image base64 uploader helper - now handles multi-file staging with automatic name extraction
@@ -2133,8 +2143,8 @@ export default function AdminPanel({
                       <input
                         type="text"
                         required
-                        value={settings.contactPhone}
-                        onChange={(e) => saveSettings({ ...settings, contactPhone: e.target.value })}
+                        value={localSettings?.contactPhone || ''}
+                        onChange={(e) => localSettings && setLocalSettings({ ...localSettings, contactPhone: e.target.value })}
                         className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3"
                       />
                     </div>
@@ -2143,8 +2153,8 @@ export default function AdminPanel({
                       <input
                         type="text"
                         required
-                        value={settings.whatsappNumber}
-                        onChange={(e) => saveSettings({ ...settings, whatsappNumber: e.target.value })}
+                        value={localSettings?.whatsappNumber || ''}
+                        onChange={(e) => localSettings && setLocalSettings({ ...localSettings, whatsappNumber: e.target.value })}
                         className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3 focus:outline-none"
                       />
                     </div>
@@ -2156,8 +2166,8 @@ export default function AdminPanel({
                       <input
                         type="email"
                         required
-                        value={settings.contactEmail}
-                        onChange={(e) => saveSettings({ ...settings, contactEmail: e.target.value })}
+                        value={localSettings?.contactEmail || ''}
+                        onChange={(e) => localSettings && setLocalSettings({ ...localSettings, contactEmail: e.target.value })}
                         className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3"
                       />
                     </div>
@@ -2166,8 +2176,8 @@ export default function AdminPanel({
                       <input
                         type="text"
                         required
-                        value={settings.contactAddress}
-                        onChange={(e) => saveSettings({ ...settings, contactAddress: e.target.value })}
+                        value={localSettings?.contactAddress || ''}
+                        onChange={(e) => localSettings && setLocalSettings({ ...localSettings, contactAddress: e.target.value })}
                         className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3"
                       />
                     </div>
@@ -2178,8 +2188,8 @@ export default function AdminPanel({
                     <input
                       type="text"
                       required
-                      value={settings.heroTitle}
-                      onChange={(e) => saveSettings({ ...settings, heroTitle: e.target.value })}
+                      value={localSettings?.heroTitle || ''}
+                      onChange={(e) => localSettings && setLocalSettings({ ...localSettings, heroTitle: e.target.value })}
                       className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3 font-semibold"
                     />
                   </div>
@@ -2189,8 +2199,8 @@ export default function AdminPanel({
                     <input
                       type="text"
                       required
-                      value={settings.heroSubtitle}
-                      onChange={(e) => saveSettings({ ...settings, heroSubtitle: e.target.value })}
+                      value={localSettings?.heroSubtitle || ''}
+                      onChange={(e) => localSettings && setLocalSettings({ ...localSettings, heroSubtitle: e.target.value })}
                       className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3"
                     />
                   </div>
@@ -2200,8 +2210,8 @@ export default function AdminPanel({
                     <textarea
                       rows={4}
                       required
-                      value={settings.companyAboutText}
-                      onChange={(e) => saveSettings({ ...settings, companyAboutText: e.target.value })}
+                      value={localSettings?.companyAboutText || ''}
+                      onChange={(e) => localSettings && setLocalSettings({ ...localSettings, companyAboutText: e.target.value })}
                       className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-850 rounded-xl p-3"
                     ></textarea>
                   </div>

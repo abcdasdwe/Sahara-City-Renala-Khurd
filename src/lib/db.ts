@@ -96,7 +96,7 @@ export async function getSettings(): Promise<AppSettings> {
   const defaultSettings: AppSettings = {
     heroTitle: 'Sahara Business City',
     heroSubtitle: 'Luxurious Living & Secure Investments in Punjab\'s Most Modern Housing Society',
-    heroBackground: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=1600',
+    heroBackground: '/sahara-bg.jpg',
     contactAddress: 'House # 130, Sahara city, Renala Khurd, Okara, Punjab, Pakistan',
     contactEmail: 'info@saharacityrenala.com',
     contactPhone: '0321 2099125',
@@ -449,7 +449,7 @@ Plot buyers are invited to schedule their physical site allocation checks and re
   const settings: AppSettings = {
     heroTitle: 'Sahara Business City',
     heroSubtitle: 'Luxurious Living & Secure Investments in Punjab\'s Most Modern Housing Society',
-    heroBackground: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=1600',
+    heroBackground: '/sahara-bg.jpg',
     contactAddress: 'House # 130, Sahara city, Renala Khurd, Okara, Punjab, Pakistan',
     contactEmail: 'info@saharacityrenala.com',
     contactPhone: '0321 2099125',

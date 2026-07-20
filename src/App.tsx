@@ -16,7 +16,7 @@ import AdminLogin from './components/AdminLogin';
 import SEOHead from './components/SEOHead';
 import { faqList } from './faqData';
 import { Property, Lead, Review, Blog, MediaItem, AppSettings } from './types';
-import { dbGetAll, dbPut, getSettings, seedDatabaseIfEmpty } from './lib/db';
+import { dbGetAll, dbPut, getSettings, seedDatabaseIfEmpty, saveSettings } from './lib/db';
 import { generatePropertyPDF } from './lib/pdfGenerator';
 
 export default function App() {
@@ -253,6 +253,11 @@ export default function App() {
       const b = await dbGetAll<Blog>('blogs');
       const m = await dbGetAll<MediaItem>('media');
       const s = await getSettings();
+
+      if (s && (s.heroBackground.includes('unsplash.com') || s.heroBackground === 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=1600')) {
+        s.heroBackground = '/sahara-bg.jpg';
+        await saveSettings(s);
+      }
 
       setProperties(p.sort((a,b) => b.createdDate.localeCompare(a.createdDate)));
       setLeads(l.sort((a,b) => b.createdDate.localeCompare(a.createdDate)));
