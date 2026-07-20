@@ -14,6 +14,7 @@ import PropertyCompare from './components/PropertyCompare';
 import AdminPanel from './components/AdminPanel';
 import AdminLogin from './components/AdminLogin';
 import SEOHead from './components/SEOHead';
+import MasterPlanSection from './components/MasterPlanSection';
 import { faqList } from './faqData';
 import { Property, Lead, Review, Blog, MediaItem, AppSettings } from './types';
 import { dbGetAll, dbPut, getSettings, seedDatabaseIfEmpty, saveSettings } from './lib/db';
@@ -586,6 +587,9 @@ export default function App() {
               </div>
 
             </div>
+
+            {/* Master Plan Section */}
+            <MasterPlanSection />
 
             {/* Featured Properties grid */}
             <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-left">
