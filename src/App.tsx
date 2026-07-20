@@ -268,7 +268,7 @@ export default function App() {
       setReviews(r.sort((a,b) => b.createdDate.localeCompare(a.createdDate)));
       setBlogs(b.sort((a,b) => b.createdDate.localeCompare(a.createdDate)));
       setMedia(m);
-      setSettings(s);
+      setSettings(s ? { ...s } : null);
     } catch (err) {
       console.error('Error fetching data from IndexedDB database stores:', err);
     }
@@ -467,6 +467,8 @@ export default function App() {
     );
   }
 
+  const cleanHeroBg = (settings?.heroBackground || '/sahara-bg.jpg').trim().replace(/['"]/g, '');
+
   return (
     <div className={`transition-all duration-300 ${darkMode ? 'bg-[#090E16] text-slate-100' : 'bg-[#F4F6F9] text-gray-800'}`}>
       
@@ -491,7 +493,7 @@ export default function App() {
             
             {/* Visual Header Grid Showcase */}
             <div 
-              style={{ backgroundImage: `linear-gradient(to bottom, rgba(9,14,22,0.85), rgba(9,14,22,0.9)), url("${settings.heroBackground}")` }}
+              style={{ backgroundImage: `linear-gradient(to bottom, rgba(9,14,22,0.85), rgba(9,14,22,0.9)), url('${cleanHeroBg}')` }}
               className="bg-cover bg-center py-24 sm:py-32 px-4 text-center text-white border-b border-[#C5A880]/10 flex flex-col items-center justify-center"
             >
               <div className="max-w-4xl space-y-4">
