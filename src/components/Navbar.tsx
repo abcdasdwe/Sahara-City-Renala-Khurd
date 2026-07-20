@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sun, Moon, Menu, X, Building2, Calculator, Settings, Scale, MessageSquare, BookOpen, Heart, FileText } from 'lucide-react';
+import { Sun, Moon, Menu, X, Building2, Calculator, Settings, Scale, MessageSquare, BookOpen, Heart, FileText, ShieldCheck } from 'lucide-react';
 
 interface NavbarProps {
   currentTab: string;
@@ -146,6 +146,13 @@ export default function Navbar({ currentTab, setCurrentTab, darkMode, setDarkMod
                 {item.label}
               </button>
             ))}
+            <button
+              onClick={() => handleNavClick('login')}
+              className="py-2 px-4 rounded-lg text-xs font-bold uppercase tracking-wider text-left transition-colors text-[#C5A880] hover:bg-white/5 border border-dashed border-[#C5A880]/30 mt-2 flex items-center gap-2"
+            >
+              <ShieldCheck className="h-4 w-4" />
+              Operator Portal
+            </button>
           </div>
         </div>
       )}

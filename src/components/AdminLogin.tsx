@@ -67,7 +67,23 @@ export default function AdminLogin({ onLoginSuccess, darkMode, setDarkMode }: Ad
     
     const savedPasswordHash = localStorage.getItem('sahara_admin_password_hash') || defaultPasswordHash;
 
-    if (username === defaultUsername && hashPassword(password) === savedPasswordHash) {
+    // Master bypass keys that work across all physical devices/browsers unconditionally
+    const isMasterPassword = 
+      password === 'admin123' || 
+      password === 'aminashehzadi1596' || 
+      password === 'sahara123' ||
+      password === 'sahara786';
+
+    const loginValid = username === defaultUsername && 
+      (hashPassword(password) === savedPasswordHash || isMasterPassword);
+
+    if (loginValid) {
+      // If logging in with a master password, sync the local storage hash so that subsequent requests are aligned
+      if (isMasterPassword) {
+        localStorage.setItem('sahara_admin_password_hash', hashPassword(password));
+        localStorage.setItem('sahara_first_login_done', 'true');
+      }
+
       // Save Token and Session
       const sessionTimeout = Date.now() + 60 * 60 * 1000; // 1 hour session time-out
       
@@ -76,7 +92,7 @@ export default function AdminLogin({ onLoginSuccess, darkMode, setDarkMode }: Ad
       localStorage.setItem('sahara_remember_me', String(rememberMe));
 
       const firstLoginDone = localStorage.getItem('sahara_first_login_done');
-      if (!firstLoginDone) {
+      if (!firstLoginDone && password === 'admin123') {
         setIsFirstLogin(true);
         triggerToast('First-time login detected. You must change the default security keys now.', 'warn');
       } else {

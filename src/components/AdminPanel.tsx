@@ -69,6 +69,14 @@ export default function AdminPanel({
   const [editingProperty, setEditingProperty] = useState<Partial<Property> | null>(null);
   const [editingBlog, setEditingBlog] = useState<Partial<Blog> | null>(null);
   const [uploadCategory, setUploadCategory] = useState<'Residential' | 'Commercial' | 'Parks' | 'Mosque' | 'Development' | 'General'>('General');
+  const [uploadTitle, setUploadTitle] = useState('');
+  const [stagedMediaFiles, setStagedMediaFiles] = useState<{
+    id: string;
+    file: File;
+    title: string;
+    category: 'Residential' | 'Commercial' | 'Parks' | 'Mosque' | 'Development' | 'General';
+    preview: string;
+  }[]>([]);
   
   // Generated SEO mockup states
   const [seoPresetPropertyId, setSeoPresetPropertyId] = useState('');
@@ -354,28 +362,75 @@ export default function AdminPanel({
     onRefreshData();
   };
 
-  // Image base64 uploader helper
+  // Image base64 uploader helper - now handles multi-file staging with automatic name extraction
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64Url = reader.result as string;
-      const newItem: MediaItem = {
-        id: `med-${Date.now()}`,
-        name: file.name.substring(0, 30),
+    const newStaged: {
+      id: string;
+      file: File;
+      title: string;
+      category: 'Residential' | 'Commercial' | 'Parks' | 'Mosque' | 'Development' | 'General';
+      preview: string;
+    }[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      // Clean up file extension for a nicer default title
+      const cleanTitle = file.name.replace(/\.[^/.]+$/, "").substring(0, 40);
+      newStaged.push({
+        id: `staged-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 5)}`,
+        file,
+        title: cleanTitle,
         category: uploadCategory,
-        url: base64Url,
-        uploadedDate: new Date().toISOString().split('T')[0],
-        size: `${Math.round(file.size / 1024)} KB`
-      };
+        preview: URL.createObjectURL(file)
+      });
+    }
 
-      await dbPut('media', newItem);
-      triggerToast('Asset uploaded to Media Library!', 'success');
+    setStagedMediaFiles(prev => [...prev, ...newStaged]);
+    triggerToast(`Staged ${files.length} image(s) for uploading! Write titles & categories below.`, 'info');
+    
+    // Reset file input so same file can be selected again
+    e.target.value = '';
+  };
+
+  // Handle processing and uploading all staged media files in bulk
+  const handleBatchUpload = async () => {
+    if (stagedMediaFiles.length === 0) return;
+
+    let successCount = 0;
+    try {
+      for (const item of stagedMediaFiles) {
+        const base64Url = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = () => reject(new Error('Failed to read file'));
+          reader.readAsDataURL(item.file);
+        });
+
+        const newItem: MediaItem = {
+          id: `med-${Date.now()}-${successCount}-${Math.random().toString(36).substr(2, 4)}`,
+          name: item.title.trim() || item.file.name.substring(0, 30),
+          category: item.category,
+          url: base64Url,
+          uploadedDate: new Date().toISOString().split('T')[0],
+          size: `${Math.round(item.file.size / 1024)} KB`
+        };
+
+        await dbPut('media', newItem);
+        successCount++;
+        // Revoke preview URL to free up memory
+        URL.revokeObjectURL(item.preview);
+      }
+
+      setStagedMediaFiles([]);
+      triggerToast(`Successfully uploaded ${successCount} assets to Media Library!`, 'success');
       onRefreshData();
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      console.error(err);
+      triggerToast('An error occurred during batch image upload.', 'error');
+    }
   };
 
   // Export DB
@@ -1243,33 +1298,59 @@ export default function AdminPanel({
                     </div>
 
                     {/* Image links */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-sans">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-sans">
                       <div>
-                        <label className="block font-bold text-gray-500 uppercase tracking-widest mb-1">Property Photo File</label>
+                        <label className="block font-bold text-gray-500 uppercase tracking-widest mb-1">
+                          Property Photos (Bulk Upload Supported)
+                        </label>
+                        
+                        {editingProperty.images && editingProperty.images.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-2 p-2 bg-gray-50 dark:bg-black/20 rounded-xl border border-gray-150 dark:border-gray-800">
+                            {editingProperty.images.map((img, idx) => (
+                              <div key={idx} className="relative group h-12 w-12 rounded-lg overflow-hidden border border-gray-250 dark:border-gray-800 flex-shrink-0 shadow-sm">
+                                <img src={img} alt={`Img ${idx}`} className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updated = (editingProperty.images || []).filter((_, i) => i !== idx);
+                                    setEditingProperty({ ...editingProperty, images: updated });
+                                  }}
+                                  className="absolute inset-0 bg-rose-600/90 text-white font-extrabold text-[9px] uppercase tracking-wider flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-center"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
                         <div className="flex items-center gap-2.5">
-                          {editingProperty.images?.[0] && (
-                            <img
-                              src={editingProperty.images[0]}
-                              alt="Property Thumbnail"
-                              className="h-10 w-10 object-cover rounded-xl border border-gray-250 dark:border-gray-800"
-                              referrerPolicy="no-referrer"
-                            />
-                          )}
-                          <label className="flex-1 flex items-center justify-center gap-2 py-2 px-3 border border-dashed border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-gray-500 font-semibold text-center transition-colors">
-                            <Upload className="h-4 w-4" />
-                            <span>Select Photo</span>
+                          <label className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 border border-dashed border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-gray-500 font-bold text-center transition-all">
+                            <Upload className="h-4 w-4 text-[#C5A880]" />
+                            <span>Select Photo(s)</span>
                             <input
                               type="file"
                               accept="image/*"
+                              multiple
                               className="hidden"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  const reader = new FileReader();
-                                  reader.onloadend = () => {
-                                    setEditingProperty({ ...editingProperty, images: [reader.result as string] });
-                                  };
-                                  reader.readAsDataURL(file);
+                              onChange={async (e) => {
+                                const files = e.target.files;
+                                if (files && files.length > 0) {
+                                  const newImages: string[] = [];
+                                  for (let i = 0; i < files.length; i++) {
+                                    const file = files[i];
+                                    const base64 = await new Promise<string>((resolve) => {
+                                      const reader = new FileReader();
+                                      reader.onloadend = () => resolve(reader.result as string);
+                                      reader.readAsDataURL(file);
+                                    });
+                                    newImages.push(base64);
+                                  }
+                                  setEditingProperty({
+                                    ...editingProperty,
+                                    images: [...(editingProperty.images || []), ...newImages]
+                                  });
+                                  triggerToast(`Appended ${newImages.length} images to property draft!`, 'success');
                                 }
                               }}
                             />
@@ -1624,7 +1705,9 @@ export default function AdminPanel({
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Media Banner Photo</label>
+                        <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                          Media Banner Photo (Multi-select auto-saves rest to Media Library)
+                        </label>
                         <div className="flex items-center gap-2">
                           {editingBlog.image && (
                             <img
@@ -1634,21 +1717,52 @@ export default function AdminPanel({
                               referrerPolicy="no-referrer"
                             />
                           )}
-                          <label className="flex-1 flex items-center justify-center gap-2 py-2 px-3 border border-dashed border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-gray-500 font-semibold text-center transition-colors">
-                            <Upload className="h-4 w-4" />
-                            <span>Select Image</span>
+                          <label className="flex-1 flex items-center justify-center gap-2 py-2 px-3 border border-dashed border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-gray-500 font-bold text-center transition-colors">
+                            <Upload className="h-4 w-4 text-[#C5A880]" />
+                            <span>Select Photo(s)</span>
                             <input
                               type="file"
                               accept="image/*"
+                              multiple
                               className="hidden"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  const reader = new FileReader();
-                                  reader.onloadend = () => {
-                                    setEditingBlog({ ...editingBlog, image: reader.result as string });
-                                  };
-                                  reader.readAsDataURL(file);
+                              onChange={async (e) => {
+                                const files = e.target.files;
+                                if (files && files.length > 0) {
+                                  // First file is the banner
+                                  const firstFile = files[0];
+                                  const firstBase64 = await new Promise<string>((resolve) => {
+                                    const reader = new FileReader();
+                                    reader.onloadend = () => resolve(reader.result as string);
+                                    reader.readAsDataURL(firstFile);
+                                  });
+                                  setEditingBlog({ ...editingBlog, image: firstBase64 });
+
+                                  // Other files (if any) are uploaded to media library directly
+                                  if (files.length > 1) {
+                                    let uploadedCount = 0;
+                                    for (let i = 1; i < files.length; i++) {
+                                      const file = files[i];
+                                      const base64 = await new Promise<string>((resolve) => {
+                                        const reader = new FileReader();
+                                        reader.onloadend = () => resolve(reader.result as string);
+                                        reader.readAsDataURL(file);
+                                      });
+                                      const newItem: MediaItem = {
+                                        id: `med-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 4)}`,
+                                        name: file.name.replace(/\.[^/.]+$/, "").substring(0, 30),
+                                        category: 'General',
+                                        url: base64,
+                                        uploadedDate: new Date().toISOString().split('T')[0],
+                                        size: `${Math.round(file.size / 1024)} KB`
+                                      };
+                                      await dbPut('media', newItem);
+                                      uploadedCount++;
+                                    }
+                                    triggerToast(`Set first photo as blog banner, and auto-saved remaining ${uploadedCount} photos to the Media Library!`, 'success');
+                                    onRefreshData();
+                                  } else {
+                                    triggerToast('Set blog banner photo!', 'success');
+                                  }
                                 }
                               }}
                             />
@@ -1745,36 +1859,214 @@ export default function AdminPanel({
             {activeTab === 'media' && (
               <div className="space-y-6 font-sans text-xs">
                 
-                <div className="bg-white dark:bg-[#0F1A2C] border border-gray-100 dark:border-gray-800 p-6 rounded-3xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">
-                      Repository Image Base64 Uploader
-                    </h3>
-                    <p className="text-xs text-gray-500">
-                      Upload society pictures. Stored instantly under IndexedDB store "media".
-                    </p>
+                <div className="bg-white dark:bg-[#0F1A2C] border border-gray-100 dark:border-gray-800 p-6 rounded-3xl shadow-sm space-y-5 text-left">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100 dark:border-gray-800">
+                    <div className="space-y-1">
+                      <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+                        <ImageIcon className="h-4.5 w-4.5 text-[#C5A880]" />
+                        Repository Image Bulk Uploader
+                      </h3>
+                      <p className="text-xs text-gray-500">
+                        Upload multi-resolution society images. Specify custom titles at the time of upload below. Stored inside local browser storage.
+                      </p>
+                    </div>
+
+                    {/* Quick Access Sync info */}
+                    <div className="bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-xl p-3 text-[11px] max-w-sm">
+                      <p className="font-bold flex items-center gap-1">
+                        <span>📱</span> Multi-Device Sync Notice
+                      </p>
+                      <p className="mt-1 leading-relaxed text-[10px]">
+                        Sahara City stores images locally on each device. To transfer your media, download your desktop database and import it on mobile below!
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <select
-                      value={uploadCategory}
-                      onChange={(e) => setUploadCategory(e.target.value as any)}
-                      className="bg-gray-50 dark:bg-black/30 border border-gray-200 dark:border-gray-850 p-2.5 rounded-xl font-bold uppercase text-[10px]"
-                    >
-                      <option value="Residential">Residential</option>
-                      <option value="Commercial">Commercial</option>
-                      <option value="Parks">Parks</option>
-                      <option value="Mosque">Mosque</option>
-                      <option value="Development">Development</option>
-                      <option value="General">General</option>
-                    </select>
+                  {/* If there are staged files, show the custom title editor per image */}
+                  {stagedMediaFiles.length > 0 ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between bg-[#C5A880]/15 p-4 rounded-2xl border border-[#C5A880]/30">
+                        <div className="space-y-0.5">
+                          <p className="font-bold text-[#C5A880] text-[11px] uppercase tracking-wider">
+                            ⚡ Staged Batch Manager ({stagedMediaFiles.length} Images Ready)
+                          </p>
+                          <p className="text-gray-500 text-[10px]">
+                            Customize titles and categories for each image in the table below before final upload.
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              // Revoke all previews
+                              stagedMediaFiles.forEach(item => URL.revokeObjectURL(item.preview));
+                              setStagedMediaFiles([]);
+                              triggerToast('Cleared staged batch', 'info');
+                            }}
+                            className="bg-gray-150 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/20 text-gray-600 dark:text-gray-300 px-3 py-2 rounded-xl font-bold uppercase text-[9px] tracking-wider transition-all"
+                          >
+                            Cancel Batch
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleBatchUpload}
+                            className="bg-[#C5A880] hover:bg-[#b8976d] text-white dark:text-[#090E16] px-4 py-2 rounded-xl font-bold uppercase text-[9px] tracking-wider flex items-center gap-1.5 shadow-md transition-all"
+                          >
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            Upload All Staged
+                          </button>
+                        </div>
+                      </div>
 
-                    <label className="bg-[#0F1A2C] hover:bg-[#152740] dark:bg-[#C5A880] dark:hover:bg-[#b8976d] text-white dark:text-[#090E16] font-bold text-xs py-2.5 px-4 rounded-xl flex items-center gap-2 cursor-pointer shadow-md">
-                      <Upload className="h-4 w-4" /> Select Image
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[380px] overflow-y-auto pr-1">
+                        {stagedMediaFiles.map((item, idx) => (
+                          <div key={item.id} className="bg-gray-50 dark:bg-black/20 border border-gray-150 dark:border-gray-850 rounded-2xl p-3 flex gap-3 items-center relative group">
+                            <div className="h-16 w-16 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 flex-shrink-0 bg-black">
+                              <img src={item.preview} alt="staged-preview" className="h-full w-full object-cover" />
+                            </div>
+                            <div className="flex-1 min-w-0 space-y-2">
+                              <div>
+                                <label className="block text-[9px] font-bold text-gray-400 uppercase mb-0.5">Custom Image Title</label>
+                                <input
+                                  type="text"
+                                  placeholder="e.g. Mosque entrance front gate"
+                                  value={item.title}
+                                  onChange={(e) => {
+                                    const updated = [...stagedMediaFiles];
+                                    updated[idx].title = e.target.value;
+                                    setStagedMediaFiles(updated);
+                                  }}
+                                  className="w-full bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-800 rounded-lg py-1.5 px-2 text-[10px] focus:outline-none focus:border-[#C5A880]"
+                                />
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1">
+                                  <label className="block text-[9px] font-bold text-gray-400 uppercase mb-0.5">Category</label>
+                                  <select
+                                    value={item.category}
+                                    onChange={(e) => {
+                                      const updated = [...stagedMediaFiles];
+                                      updated[idx].category = e.target.value as any;
+                                      setStagedMediaFiles(updated);
+                                    }}
+                                    className="w-full bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-800 rounded-lg p-1 text-[9px] uppercase font-bold text-gray-600 dark:text-gray-300 focus:outline-none"
+                                  >
+                                    <option value="Residential">Residential</option>
+                                    <option value="Commercial">Commercial</option>
+                                    <option value="Parks">Parks</option>
+                                    <option value="Mosque">Mosque</option>
+                                    <option value="Development">Development</option>
+                                    <option value="General">General</option>
+                                  </select>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    URL.revokeObjectURL(item.preview);
+                                    setStagedMediaFiles(stagedMediaFiles.filter(f => f.id !== item.id));
+                                  }}
+                                  className="self-end p-1.5 bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-500 rounded-lg transition-all"
+                                  title="Remove from batch"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Add more to batch button */}
+                      <div className="flex justify-end pt-1">
+                        <label className="bg-gray-150 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 font-bold text-[10px] uppercase tracking-wider py-2 px-4 rounded-xl flex items-center gap-1.5 cursor-pointer transition-colors">
+                          <Plus className="h-4 w-4 text-[#C5A880]" />
+                          Add More Files to Batch
+                          <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={handleImageUpload}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Initial select and upload view - Beautiful drag/select area */
+                    <div className="border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-3xl p-8 text-center bg-gray-50/50 dark:bg-black/5 hover:bg-gray-50 dark:hover:bg-black/10 transition-colors">
+                      <div className="max-w-md mx-auto space-y-4 flex flex-col items-center">
+                        <div className="h-12 w-12 bg-[#C5A880]/10 text-[#C5A880] rounded-2xl flex items-center justify-center">
+                          <Upload className="h-6 w-6" />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-sm font-bold text-gray-800 dark:text-white">
+                            Select or Drag & Drop Multiple Images
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            Bulk uploading is supported. You can write individual custom titles for each file before final save.
+                          </p>
+                        </div>
+                        
+                        <div className="flex flex-col sm:flex-row items-center gap-2 pt-2">
+                          <div className="flex items-center gap-1 bg-white dark:bg-black/40 border border-gray-200 dark:border-gray-850 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider">
+                            <span className="text-gray-400">Default Category:</span>
+                            <select
+                              value={uploadCategory}
+                              onChange={(e) => setUploadCategory(e.target.value as any)}
+                              className="bg-transparent border-none focus:outline-none text-[#C5A880]"
+                            >
+                              <option value="Residential">Residential</option>
+                              <option value="Commercial">Commercial</option>
+                              <option value="Parks">Parks</option>
+                              <option value="Mosque">Mosque</option>
+                              <option value="Development">Development</option>
+                              <option value="General">General</option>
+                            </select>
+                          </div>
+
+                          <label className="bg-[#0F1A2C] hover:bg-[#152740] dark:bg-[#C5A880] dark:hover:bg-[#b8976d] text-white dark:text-[#090E16] font-bold text-xs py-2.5 px-5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md transition-colors">
+                            <Upload className="h-4 w-4" /> Choose File(s)
+                            <input
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              onChange={handleImageUpload}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+
+                {/* Instant Database Sync Controls for easier mobile transfer */}
+                <div className="bg-[#C5A880]/5 border border-[#C5A880]/20 rounded-3xl p-5 text-xs flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div className="space-y-1 text-left">
+                    <h4 className="font-bold text-gray-900 dark:text-white flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                      <RefreshCw className="h-4 w-4 text-[#C5A880]" />
+                      Instant Cross-Device Synchronization
+                    </h4>
+                    <p className="text-gray-500 max-w-xl">
+                      Export the current database layout from your active desktop and click Import on your mobile. Your entire dashboard status, listings, reviews, campaigns, and media library will synchronize immediately!
+                    </p>
+                  </div>
+                  <div className="flex gap-2 w-full md:w-auto">
+                    <button
+                      onClick={handleExportDatabase}
+                      className="flex-1 md:flex-none bg-[#0F1A2C] hover:bg-slate-900 dark:bg-white/10 dark:hover:bg-white/25 text-white py-2.5 px-4 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <Download className="h-4 w-4 text-[#C5A880]" />
+                      Export Database JSON
+                    </button>
+                    <label className="flex-1 md:flex-none bg-[#C5A880] hover:bg-[#b8976d] text-[#090E16] py-2.5 px-4 rounded-xl font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-sm transition-colors text-center">
+                      <FileUp className="h-4 w-4" />
+                      Import Database JSON
                       <input
                         type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
+                        accept=".json"
+                        onChange={handleImportDatabase}
                         className="hidden"
                       />
                     </label>

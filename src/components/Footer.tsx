@@ -159,6 +159,10 @@ export default function Footer({ setCurrentTab, contactAddress, contactPhone, co
             <button onClick={() => handleLinkClick('terms')} className="hover:text-white transition-colors cursor-pointer">
               Terms & Conditions
             </button>
+            <span className="text-gray-700">|</span>
+            <button onClick={() => handleLinkClick('login')} className="hover:text-[#C5A880] text-gray-400 font-bold transition-colors cursor-pointer">
+              Operator Portal
+            </button>
           </div>
         </div>
       </div>
