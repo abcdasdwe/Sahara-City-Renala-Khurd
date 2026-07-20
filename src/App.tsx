@@ -254,9 +254,13 @@ export default function App() {
       const m = await dbGetAll<MediaItem>('media');
       const s = await getSettings();
 
-      if (s && (s.heroBackground.includes('unsplash.com') || s.heroBackground === 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=1600')) {
-        s.heroBackground = '/sahara-bg.jpg';
-        await saveSettings(s);
+      if (s) {
+        const bg = s.heroBackground;
+        const isValidBg = bg && bg.trim() !== '' && !bg.includes('unsplash.com') && (bg.startsWith('/') || bg.startsWith('data:') || bg.startsWith('blob:') || bg.startsWith('http'));
+        if (!isValidBg || bg.includes('unsplash.com') || bg.includes('photo-1564013799919-ab600027ffc6')) {
+          s.heroBackground = '/sahara-bg.jpg';
+          await saveSettings(s);
+        }
       }
 
       setProperties(p.sort((a,b) => b.createdDate.localeCompare(a.createdDate)));
@@ -487,7 +491,7 @@ export default function App() {
             
             {/* Visual Header Grid Showcase */}
             <div 
-              style={{ backgroundImage: `linear-gradient(to bottom, rgba(9,14,22,0.85), rgba(9,14,22,0.9)), url(${settings.heroBackground})` }}
+              style={{ backgroundImage: `linear-gradient(to bottom, rgba(9,14,22,0.85), rgba(9,14,22,0.9)), url("${settings.heroBackground}")` }}
               className="bg-cover bg-center py-24 sm:py-32 px-4 text-center text-white border-b border-[#C5A880]/10 flex flex-col items-center justify-center"
             >
               <div className="max-w-4xl space-y-4">

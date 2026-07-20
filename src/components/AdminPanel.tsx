@@ -2111,6 +2111,25 @@ export default function AdminPanel({
                         </button>
                         <button
                           onClick={async () => {
+                            try {
+                              const updatedSettings = { ...settings, heroBackground: item.url };
+                              await saveSettings(updatedSettings);
+                              if (localSettings) {
+                                setLocalSettings(updatedSettings);
+                              }
+                              triggerToast('Selected image applied as Website Hero Background instantly!', 'success');
+                              onRefreshData();
+                            } catch (err) {
+                              triggerToast('Failed to update background image settings.', 'error');
+                            }
+                          }}
+                          className="p-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl cursor-pointer"
+                          title="Set as Hero Background"
+                        >
+                          <Globe className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={async () => {
                             if (confirm('Delete media asset?')) {
                               await dbDelete('media', item.id);
                               triggerToast('Media asset removed from IndexedDB.', 'info');
@@ -2203,6 +2222,62 @@ export default function AdminPanel({
                       onChange={(e) => localSettings && setLocalSettings({ ...localSettings, heroSubtitle: e.target.value })}
                       className="w-full bg-gray-50 dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3"
                     />
+                  </div>
+
+                  <div className="space-y-2 border border-gray-150 dark:border-gray-800/60 p-4 rounded-2xl bg-gray-50/50 dark:bg-black/10">
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase">Hero Section Background Image</label>
+                    <div className="flex flex-col sm:flex-row gap-4 items-center">
+                      {localSettings?.heroBackground && (
+                        <div className="h-20 w-32 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 flex-shrink-0 bg-black relative">
+                          <img src={localSettings.heroBackground} alt="Hero BG Preview" className="h-full w-full object-cover" />
+                        </div>
+                      )}
+                      <div className="flex-1 w-full space-y-2">
+                        <input
+                          type="text"
+                          required
+                          placeholder="Image URL or Base64 Data URI"
+                          value={localSettings?.heroBackground || ''}
+                          onChange={(e) => localSettings && setLocalSettings({ ...localSettings, heroBackground: e.target.value })}
+                          className="w-full bg-white dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3 text-xs"
+                        />
+                        <div className="flex items-center gap-3">
+                          <label className="bg-[#0F1A2C]/10 hover:bg-[#0F1A2C]/20 dark:bg-white/10 dark:hover:bg-white/20 text-[#0F1A2C] dark:text-[#C5A880] font-bold text-[10px] uppercase tracking-wider py-1.5 px-3 rounded-lg cursor-pointer transition-colors inline-block">
+                            Upload Background Image
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  const reader = new FileReader();
+                                  reader.onloadend = () => {
+                                    if (localSettings) {
+                                      setLocalSettings({ ...localSettings, heroBackground: reader.result as string });
+                                      triggerToast('New background image loaded! Click Synchronize to apply to website.', 'info');
+                                    }
+                                  };
+                                  reader.readAsDataURL(file);
+                                }
+                              }}
+                              className="hidden"
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (localSettings) {
+                                setLocalSettings({ ...localSettings, heroBackground: '/sahara-bg.jpg' });
+                                triggerToast('Reset background to Sahara City standard master plan rendering!', 'success');
+                              }
+                            }}
+                            className="text-gray-500 hover:text-[#C5A880] text-[10px] font-bold uppercase tracking-wider cursor-pointer"
+                          >
+                            Reset to Default
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="space-y-1">
