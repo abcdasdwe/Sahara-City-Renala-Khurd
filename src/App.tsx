@@ -204,7 +204,23 @@ export default function App() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [media, setMedia] = useState<MediaItem[]>([]);
-  const [settings, setSettings] = useState<AppSettings | null>(null);
+  const [settings, setSettings] = useState<AppSettings>({
+    heroTitle: 'Sahara Business City',
+    heroSubtitle: 'Luxurious Living & Secure Investments in Punjab\'s Most Modern Housing Society',
+    heroBackground: '/sahara-bg.jpg',
+    contactAddress: 'House # 130, Sahara city, Renala Khurd, Okara, Punjab, Pakistan',
+    contactEmail: 'info@saharacityrenala.com',
+    contactPhone: '0321 2099125',
+    whatsappNumber: '+923212099125',
+    companyAboutText: 'Sahara City Renala Khurd is a premier gated community offering a gold-standard lifestyle. Designed list items include international security standards, wide carpeted roads near N5 highway, underground electrification, continuous clean water, fully functional primary schools, dynamic central Mosque, and multiple thematic parks (Anwar Shaheed Colony area). We deliver residential and commercial plots alongside custom luxury villas with very easy monthly and quarterly installment plans.',
+    facebookUrl: 'https://facebook.com/SaharaCityRenalaKhurdOfficial',
+    instagramUrl: 'https://instagram.com/saharacityrenala',
+    twitterUrl: 'https://twitter.com/saharacityrk',
+    youtubeUrl: 'https://youtube.com/saharacityrenala',
+    seoDefaultTitle: 'Sahara City Renala Khurd | Premium Real Estate Gated Community & Plots',
+    seoDefaultDescription: 'Discover residential & commercial plots for sale in Sahara City Renala Khurd on easy monthly installment plans with 24/7 security & top-tier amenities.',
+    footerCopyrightText: '© 2026 Sahara City Renala Khurd. All Rights Reserved. Designed for upscale lifestyle & secure investments.'
+  });
 
   // Search Widgets states on Home/Properties list
   const [searchQuery, setSearchQuery] = useState('');
@@ -268,7 +284,9 @@ export default function App() {
       setReviews(r.sort((a,b) => b.createdDate.localeCompare(a.createdDate)));
       setBlogs(b.sort((a,b) => b.createdDate.localeCompare(a.createdDate)));
       setMedia(m);
-      setSettings(s ? { ...s } : null);
+      if (s) {
+        setSettings({ ...s });
+      }
     } catch (err) {
       console.error('Error fetching data from IndexedDB database stores:', err);
     }

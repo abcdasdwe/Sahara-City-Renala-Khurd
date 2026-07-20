@@ -78,12 +78,10 @@ export default function AdminPanel({
     preview: string;
   }[]>([]);
 
-  const [localSettings, setLocalSettings] = useState<AppSettings | null>(null);
+  const [localSettings, setLocalSettings] = useState<AppSettings>(settings);
 
   useEffect(() => {
-    if (settings) {
-      setLocalSettings(settings);
-    }
+    setLocalSettings(settings);
   }, [settings]);
   
   // Generated SEO mockup states
