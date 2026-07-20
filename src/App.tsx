@@ -511,15 +511,24 @@ export default function App() {
             
             {/* Visual Header Grid Showcase */}
             <div 
-              style={{ backgroundImage: `linear-gradient(to bottom, rgba(9,14,22,0.85), rgba(9,14,22,0.9)), url('${cleanHeroBg}')` }}
-              className="bg-cover bg-center py-24 sm:py-32 px-4 text-center text-white border-b border-[#C5A880]/10 flex flex-col items-center justify-center"
+              className="relative overflow-hidden py-24 sm:py-32 px-4 text-center text-white border-b border-[#C5A880]/10 flex flex-col items-center justify-center min-h-[360px]"
             >
-              <div className="max-w-4xl space-y-4">
+              <img 
+                src={cleanHeroBg} 
+                alt="Sahara City" 
+                className="absolute inset-0 w-full h-full object-cover z-0" 
+                referrerPolicy="no-referrer"
+              />
+              <div 
+                className="absolute inset-0 z-10" 
+                style={{ backgroundImage: 'linear-gradient(to bottom, rgba(9,14,22,0.85), rgba(9,14,22,0.9))' }}
+              />
+              <div className="relative max-w-4xl space-y-4 z-20">
                 <span className="inline-block border border-[#C5A880] text-[#C5A880] text-[10px] sm:text-xs font-bold uppercase tracking-widest py-1 px-4 rounded-full">
                   PREMIER LUXURY HOUSING SOCIETY
                 </span>
                 <h1 id="hero-main-title" className="text-4xl sm:text-6xl font-black uppercase tracking-tight leading-tight text-[#e5f1e3]">
-                  Sahara Business City
+                  {settings.heroTitle || 'Sahara Business City'}
                 </h1>
                 <p className="text-gray-300 max-w-xl mx-auto text-sm sm:text-base font-light">
                   {settings.heroSubtitle}
@@ -527,7 +536,7 @@ export default function App() {
               </div>
 
               {/* Quick Search Widget */}
-              <div className="mt-12 bg-white/10 backdrop-blur-md p-4 rounded-3xl border border-white/10 w-full max-w-5xl shadow-2xl">
+              <div className="relative mt-12 bg-white/10 backdrop-blur-md p-4 rounded-3xl border border-white/10 w-full max-w-5xl shadow-2xl z-20">
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                   <div>
                     <select

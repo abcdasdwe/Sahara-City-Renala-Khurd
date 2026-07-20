@@ -8,6 +8,47 @@ import {
 import { Property, Lead, Review, Blog, MediaItem, AppSettings } from '../types';
 import { dbGetAll, dbPut, dbDelete, getSettings, saveSettings, DB_VERSION } from '../lib/db';
 
+// Helper function to dynamically compress and resize large images client-side before DB storage
+export function compressImage(file: File, maxWidth = 1920, maxHeight = 1080, quality = 0.82): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        if (height > maxHeight) {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(event.target?.result as string);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+        const base64 = canvas.toDataURL('image/jpeg', quality);
+        resolve(base64);
+      };
+      img.onerror = () => reject(new Error('Failed to load image for compression'));
+      img.src = event.target?.result as string;
+    };
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsDataURL(file);
+  });
+}
+
 interface AdminPanelProps {
   properties: Property[];
   leads: Lead[];
@@ -403,19 +444,15 @@ export default function AdminPanel({
     e.target.value = '';
   };
 
-  // Handle processing and uploading all staged media files in bulk
+  // Handle processing and uploading all staged media files in bulk with auto-compression
   const handleBatchUpload = async () => {
     if (stagedMediaFiles.length === 0) return;
 
     let successCount = 0;
     try {
       for (const item of stagedMediaFiles) {
-        const base64Url = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.onerror = () => reject(new Error('Failed to read file'));
-          reader.readAsDataURL(item.file);
-        });
+        // Compress image client-side to maximum 1920x1080 to maintain pristine performance
+        const base64Url = await compressImage(item.file);
 
         const newItem: MediaItem = {
           id: `med-${Date.now()}-${successCount}-${Math.random().toString(36).substr(2, 4)}`,
@@ -423,7 +460,7 @@ export default function AdminPanel({
           category: item.category,
           url: base64Url,
           uploadedDate: new Date().toISOString().split('T')[0],
-          size: `${Math.round(item.file.size / 1024)} KB`
+          size: `${Math.round(base64Url.length / 1333)} KB` // Approximates base64 file size in KB
         };
 
         await dbPut('media', newItem);
@@ -433,7 +470,7 @@ export default function AdminPanel({
       }
 
       setStagedMediaFiles([]);
-      triggerToast(`Successfully uploaded ${successCount} assets to Media Library!`, 'success');
+      triggerToast(`Successfully uploaded ${successCount} assets to Media Library with high-performance compression!`, 'success');
       onRefreshData();
     } catch (err) {
       console.error(err);
@@ -2245,17 +2282,19 @@ export default function AdminPanel({
                             <input
                               type="file"
                               accept="image/*"
-                              onChange={(e) => {
+                              onChange={async (e) => {
                                 const file = e.target.files?.[0];
                                 if (file) {
-                                  const reader = new FileReader();
-                                  reader.onloadend = () => {
+                                  try {
+                                    triggerToast('Processing and compressing background image...', 'info');
+                                    const compressedDataUrl = await compressImage(file);
                                     if (localSettings) {
-                                      setLocalSettings({ ...localSettings, heroBackground: reader.result as string });
-                                      triggerToast('New background image loaded! Click Synchronize to apply to website.', 'info');
+                                      setLocalSettings({ ...localSettings, heroBackground: compressedDataUrl });
+                                      triggerToast('New high-performance compressed background image loaded! Click Synchronize to apply to website.', 'success');
                                     }
-                                  };
-                                  reader.readAsDataURL(file);
+                                  } catch (err) {
+                                    triggerToast('Failed to process uploaded background image.', 'error');
+                                  }
                                 }
                               }}
                               className="hidden"
