@@ -2329,7 +2329,7 @@ export default function AdminPanel({
                       Master Plan Publishing Suite
                     </h4>
                     <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-relaxed">
-                      Upload the exact blueprint image to show as the on-page map, and/or upload the official master plan PDF file which customers can download.
+                      Upload the exact blueprint image to show as the on-page map, and/or upload the official master plan PDF file which customers can download (supports up to 100MB).
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
@@ -2421,8 +2421,8 @@ export default function AdminPanel({
                                   onChange={(e) => {
                                     const file = e.target.files?.[0];
                                     if (file) {
-                                      if (file.size > 25 * 1024 * 1024) {
-                                        triggerToast('PDF is too large! Max allowed is 25MB.', 'error');
+                                      if (file.size > 100 * 1024 * 1024) {
+                                        triggerToast('PDF is too large! Max allowed is 100MB.', 'error');
                                         return;
                                       }
                                       triggerToast('Reading master plan PDF file...', 'info');
