@@ -130,18 +130,7 @@ export default function MasterPlanSection() {
               <div className="h-1 w-20 bg-[#C5A880] rounded-full mt-2" />
             </div>
 
-            <p className="text-[#C5A880] font-medium text-sm leading-relaxed max-w-2xl font-serif">
-              Explore the official master plan of Sahara City Renala Khurd. View residential and commercial blocks, road networks, parks, green spaces, amenities, and future development areas to better understand the complete structure of the society before choosing your property.
-            </p>
 
-            <div className="text-xs sm:text-sm leading-relaxed text-gray-600 dark:text-gray-300 space-y-4">
-              <p>
-                Our thoughtfully engineered <strong>Sahara City Master Plan</strong> showcases the gold standard of modern community development. It provides visual insights into the premier gated layout of <strong>Sahara City Renala Khurd</strong>, enabling buyers to locate their favorite residential options easily.
-              </p>
-              <p>
-                Whether you are seeking <strong>Residential & Commercial Plots</strong> on flexible interest-free installment schemes or planning a strategic investment, checking this <strong>Society Map</strong> ensures you can select a corner location, avenue-facing slot, or park-facing retreat. It stands as a prime illustration of planned, secure <strong>Real Estate in Renala Khurd</strong>.
-              </p>
-            </div>
 
             {/* Feature Bento-Like List */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
