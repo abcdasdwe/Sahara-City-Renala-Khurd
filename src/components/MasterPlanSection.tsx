@@ -101,16 +101,14 @@ export default function MasterPlanSection() {
       doc.text('Verify bookings & document transfers at Site HQ: House # 130, Sahara City, Renala Khurd, Okara, Punjab.', 15, 286);
       doc.text('Contact Helpline: 0306 2444 405 / 0342 2444 405 • Official Portal: www.saharacityrenala.com', 15, 290);
 
-      // Open PDF in a new tab
-      const pdfUrl = doc.output('bloburl');
-      window.open(pdfUrl, '_blank');
+      // Save/Download the PDF File
+      doc.save('Sahara_City_Master_Plan.pdf');
       setGenerating(false);
     };
 
     img.onerror = () => {
       // Fallback
-      const pdfUrl = doc.output('bloburl');
-      window.open(pdfUrl, '_blank');
+      doc.save('Sahara_City_Master_Plan.pdf');
       setGenerating(false);
     };
   };
