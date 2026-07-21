@@ -13,13 +13,31 @@ import {
   Navigation,
   Sparkles
 } from 'lucide-react';
-import masterPlanImg from '../assets/images/sahara_society_master_plan_1784568990856.jpg';
+import { AppSettings } from '../types';
+import defaultMasterPlanImg from '../assets/images/sahara_society_master_plan_new_1784626943086.jpg';
 
-export default function MasterPlanSection() {
+interface MasterPlanSectionProps {
+  settings?: AppSettings;
+}
+
+export default function MasterPlanSection({ settings }: MasterPlanSectionProps) {
   const [generating, setGenerating] = useState(false);
   const [viewMode, setViewMode] = useState<'blueprint' | 'interactive'>('blueprint');
 
+  const masterPlanImg = settings?.masterPlanImage || defaultMasterPlanImg;
+
   const handleOpenPDF = () => {
+    if (settings?.masterPlanPdf) {
+      // If a custom PDF was uploaded by the admin, open or download it directly!
+      const link = document.createElement('a');
+      link.href = settings.masterPlanPdf;
+      link.download = settings.masterPlanPdfName || 'Sahara_Model_City_Master_Plan.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      return;
+    }
+
     setGenerating(true);
     const doc = new jsPDF({
       orientation: 'portrait',

@@ -91,6 +91,9 @@ export interface AppSettings {
   seoDefaultTitle: string;
   seoDefaultDescription: string;
   footerCopyrightText: string;
+  masterPlanImage?: string;
+  masterPlanPdf?: string;
+  masterPlanPdfName?: string;
 }
 
 export interface AnalyticsSummary {

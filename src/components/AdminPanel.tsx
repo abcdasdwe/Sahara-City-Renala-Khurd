@@ -2322,6 +2322,153 @@ export default function AdminPanel({
                     </div>
                   </div>
 
+                  {/* Master Plan Documents Upload (Image & PDF) */}
+                  <div className="space-y-4 border border-gray-150 dark:border-gray-800/60 p-4 rounded-2xl bg-[#C5A880]/5">
+                    <h4 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+                      <FileUp className="h-4.5 w-4.5 text-[#C5A880]" />
+                      Master Plan Publishing Suite
+                    </h4>
+                    <p className="text-[10px] text-gray-500 dark:text-gray-400 leading-relaxed">
+                      Upload the exact blueprint image to show as the on-page map, and/or upload the official master plan PDF file which customers can download.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                      {/* Section 1: Blueprint Image */}
+                      <div className="space-y-2 p-3.5 bg-white dark:bg-black/20 rounded-xl border dark:border-gray-800">
+                        <label className="block text-[10px] font-bold text-[#C5A880] uppercase tracking-wider">
+                          1. Map Blueprint Image (.jpg, .png)
+                        </label>
+                        
+                        <div className="flex items-center gap-3 mt-1">
+                          {localSettings?.masterPlanImage ? (
+                            <div className="h-16 w-12 rounded-lg overflow-hidden border border-gray-250 dark:border-gray-800 flex-shrink-0 bg-black relative">
+                              <img src={localSettings.masterPlanImage} alt="Master Plan Preview" className="h-full w-full object-cover" />
+                            </div>
+                          ) : (
+                            <div className="h-16 w-12 rounded-lg border border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center text-gray-400 shrink-0 bg-gray-50 dark:bg-black/10">
+                              <ImageIcon className="h-5 w-5" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <span className="block text-[10px] text-gray-400 mb-1.5 font-medium truncate">
+                              {localSettings?.masterPlanImage ? 'Custom Blueprint Loaded' : 'Using default master plan map'}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <label className="bg-[#0F1A2C] hover:bg-slate-900 dark:bg-[#C5A880] dark:hover:bg-[#b8976d] text-white dark:text-[#090E16] font-bold text-[9px] uppercase tracking-wider py-1.5 px-3 rounded-lg cursor-pointer transition-colors">
+                                Upload Map Image
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      try {
+                                        triggerToast('Compressing high-definition blueprint image...', 'info');
+                                        const base64Url = await compressImage(file, 2560, 2560, 0.9);
+                                        if (localSettings) {
+                                          setLocalSettings({ ...localSettings, masterPlanImage: base64Url });
+                                          triggerToast('Blueprint image loaded! Remember to click Synchronize below.', 'success');
+                                        }
+                                      } catch (err) {
+                                        triggerToast('Error processing blueprint image.', 'error');
+                                      }
+                                    }
+                                  }}
+                                  className="hidden"
+                                />
+                              </label>
+                              {localSettings?.masterPlanImage && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (localSettings) {
+                                      const updated = { ...localSettings };
+                                      delete updated.masterPlanImage;
+                                      setLocalSettings(updated);
+                                      triggerToast('Reset to default system master plan map image.', 'info');
+                                    }
+                                  }}
+                                  className="text-red-500 hover:underline text-[9px] font-bold uppercase tracking-wider cursor-pointer"
+                                >
+                                  Reset
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Section 2: Official PDF File */}
+                      <div className="space-y-2 p-3.5 bg-white dark:bg-black/20 rounded-xl border dark:border-gray-800">
+                        <label className="block text-[10px] font-bold text-[#C5A880] uppercase tracking-wider">
+                          2. Official PDF Document (.pdf)
+                        </label>
+                        
+                        <div className="flex items-center gap-3 mt-1">
+                          <div className="h-16 w-12 rounded-lg border border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center text-gray-400 shrink-0 bg-gray-50 dark:bg-black/10">
+                            <FileText className="h-6 w-6 text-red-500/80" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="block text-[10px] text-gray-400 mb-1.5 font-bold truncate">
+                              {localSettings?.masterPlanPdf ? (localSettings.masterPlanPdfName || 'Official_Master_Plan.pdf') : 'Using auto-generated PDF'}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <label className="bg-[#0F1A2C] hover:bg-slate-900 dark:bg-[#C5A880] dark:hover:bg-[#b8976d] text-white dark:text-[#090E16] font-bold text-[9px] uppercase tracking-wider py-1.5 px-3 rounded-lg cursor-pointer transition-colors">
+                                Upload PDF File
+                                <input
+                                  type="file"
+                                  accept="application/pdf"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      if (file.size > 25 * 1024 * 1024) {
+                                        triggerToast('PDF is too large! Max allowed is 25MB.', 'error');
+                                        return;
+                                      }
+                                      triggerToast('Reading master plan PDF file...', 'info');
+                                      const reader = new FileReader();
+                                      reader.onload = (event) => {
+                                        const base64Url = event.target?.result as string;
+                                        if (localSettings) {
+                                          setLocalSettings({ 
+                                            ...localSettings, 
+                                            masterPlanPdf: base64Url,
+                                            masterPlanPdfName: file.name
+                                          });
+                                          triggerToast('Master plan PDF document loaded! Remember to click Synchronize below.', 'success');
+                                        }
+                                      };
+                                      reader.onerror = () => triggerToast('Failed to read PDF.', 'error');
+                                      reader.readAsDataURL(file);
+                                    }
+                                  }}
+                                  className="hidden"
+                                />
+                              </label>
+                              {localSettings?.masterPlanPdf && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (localSettings) {
+                                      const updated = { ...localSettings };
+                                      delete updated.masterPlanPdf;
+                                      delete updated.masterPlanPdfName;
+                                      setLocalSettings(updated);
+                                      triggerToast('Reset to system generated PDF layout.', 'info');
+                                    }
+                                  }}
+                                  className="text-red-500 hover:underline text-[9px] font-bold uppercase tracking-wider cursor-pointer"
+                                >
+                                  Reset
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="space-y-1">
                     <label className="block text-[10px] font-bold text-gray-400 uppercase">Interactive Corporate Bio Description</label>
                     <textarea
