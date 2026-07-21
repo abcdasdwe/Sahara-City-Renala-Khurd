@@ -1,10 +1,23 @@
 import React, { useState } from 'react';
 import { jsPDF } from 'jspdf';
-import { FileText, Maximize2, Compass, MapPin, ShieldCheck, Building, TreePine } from 'lucide-react';
+import { 
+  FileText, 
+  Maximize2, 
+  Compass, 
+  MapPin, 
+  ShieldCheck, 
+  Building, 
+  TreePine, 
+  Layers, 
+  Map as MapIcon,
+  Navigation,
+  Sparkles
+} from 'lucide-react';
 import masterPlanImg from '../assets/images/sahara_society_master_plan_1784568990856.jpg';
 
 export default function MasterPlanSection() {
   const [generating, setGenerating] = useState(false);
+  const [viewMode, setViewMode] = useState<'blueprint' | 'interactive'>('blueprint');
 
   const handleOpenPDF = () => {
     setGenerating(true);
@@ -196,63 +209,168 @@ export default function MasterPlanSection() {
             </div>
           </div>
 
-          {/* Right Column: Modern Preview Card with hover effects and overlay */}
-          <div className="lg:col-span-5 flex justify-center">
-            <div className="relative w-full max-w-md group bg-white dark:bg-[#0F1A2C] border border-gray-100 dark:border-gray-850 rounded-3xl p-3.5 shadow-md hover:shadow-2xl hover:scale-[1.02] transition-all duration-500">
+          {/* Right Column: Modern Preview Card with toggle controls */}
+          <div className="lg:col-span-5 flex justify-center w-full">
+            <div className="relative w-full max-w-md group bg-white dark:bg-[#0F1A2C] border border-gray-100 dark:border-gray-850 rounded-3xl p-3.5 shadow-md hover:shadow-2xl transition-all duration-500 flex flex-col">
               
               {/* Outer decorative card frame with coordinate aesthetics */}
-              <div className="absolute top-3 left-4 text-[9px] font-mono tracking-widest text-[#C5A880]/40 uppercase select-none">
-                GRID MATRIX REF: SM-01
+              <div className="flex justify-between items-center text-[9px] font-mono tracking-widest text-[#C5A880]/60 uppercase select-none mb-1 px-1">
+                <span>GRID: SM-01</span>
+                <span className="flex items-center gap-1">
+                  <Sparkles className="h-2.5 w-2.5 text-[#C5A880] animate-pulse" />
+                  SOCIETY PORTAL
+                </span>
               </div>
-              <div className="absolute top-3 right-4 text-[9px] font-mono tracking-widest text-[#C5A880]/40 uppercase select-none">
-                APPROVED
+
+              {/* Segmented Control Switcher */}
+              <div className="flex bg-gray-100 dark:bg-gray-800/60 p-1 rounded-2xl mb-4 mt-2">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('blueprint')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer ${
+                    viewMode === 'blueprint'
+                      ? 'bg-white dark:bg-gray-900 text-[#C5A880] shadow-sm font-extrabold'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Layers className="h-4 w-4" />
+                  Blueprint
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('interactive')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer ${
+                    viewMode === 'interactive'
+                      ? 'bg-white dark:bg-gray-900 text-[#C5A880] shadow-sm font-extrabold'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                >
+                  <MapIcon className="h-4 w-4" />
+                  Live Map
+                </button>
               </div>
 
-              {/* Map Preview container with image zoom and overlay */}
-              <div 
-                onClick={handleOpenPDF}
-                className="relative mt-5 aspect-[3/4] rounded-2xl overflow-hidden cursor-pointer bg-slate-900 border border-gray-150 dark:border-gray-800 flex items-center justify-center"
-              >
-                <img
-                  src={masterPlanImg}
-                  alt="Official Sahara City Renala Khurd Master Plan showing residential blocks, commercial areas, roads, parks, and amenities."
-                  className="w-full h-full object-cover select-none transition-transform duration-700 ease-out group-hover:scale-105"
-                  loading="lazy"
-                  referrerPolicy="no-referrer"
-                />
+              {/* Map Preview container holding either static preview or Google Maps iframe */}
+              <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-slate-900 border border-gray-150 dark:border-gray-800 flex items-center justify-center">
+                
+                {viewMode === 'blueprint' ? (
+                  // Blueprint view
+                  <div 
+                    onClick={handleOpenPDF}
+                    className="relative w-full h-full cursor-pointer group/blueprint"
+                  >
+                    <img
+                      src={masterPlanImg}
+                      alt="Official Sahara City Renala Khurd Master Plan showing residential blocks, commercial areas, roads, parks, and amenities."
+                      className="w-full h-full object-cover select-none transition-transform duration-700 ease-out group-hover/blueprint:scale-105"
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                    />
 
-                {/* Ambient dark vignette gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 opacity-80 group-hover:opacity-40 transition-opacity duration-500" />
+                    {/* Ambient dark vignette gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 opacity-80 group-hover/blueprint:opacity-40 transition-opacity duration-500" />
 
-                {/* Animated interactive zoom overlay */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/65 opacity-0 group-hover:opacity-100 transition-opacity duration-500 backdrop-blur-xs">
-                  <div className="p-3 bg-[#C5A880] text-[#090E16] rounded-full shadow-lg scale-75 group-hover:scale-100 transition-transform duration-500">
-                    <Maximize2 className="h-6 w-6 animate-pulse" />
+                    {/* Animated interactive zoom overlay */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/65 opacity-0 group-hover/blueprint:opacity-100 transition-opacity duration-500 backdrop-blur-[2px]">
+                      <div className="p-3 bg-[#C5A880] text-[#090E16] rounded-full shadow-lg scale-75 group-hover/blueprint:scale-100 transition-transform duration-500">
+                        <Maximize2 className="h-6 w-6 animate-pulse" />
+                      </div>
+                      <span className="text-white font-mono text-[10px] font-bold uppercase tracking-widest mt-3.5">
+                        Open PDF Document
+                      </span>
+                      <span className="text-gray-300 text-[9px] px-6 text-center mt-1 font-light leading-relaxed">
+                        Access high-resolution vector layout plan in a new tab
+                      </span>
+                    </div>
                   </div>
-                  <span className="text-white font-mono text-[10px] font-bold uppercase tracking-widest mt-3.5">
-                    Open PDF Document
-                  </span>
-                  <span className="text-gray-300 text-[9px] px-6 text-center mt-1 font-light leading-relaxed">
-                    Access high-resolution vector layout plan in a new tab
-                  </span>
-                </div>
+                ) : (
+                  // Google Maps Iframe view
+                  <div className="w-full h-full relative">
+                    <iframe
+                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d13689.601053158485!2d73.59124434999999!3d30.88126865!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x392297eb098939c3%3A0xe10ad019ca0ba7e1!2sSahara%20Model%20City!5e0!3m2!1sen!2s!4v1716254400000!5m2!1sen!2s"
+                      className="w-full h-full border-0 rounded-2xl"
+                      allowFullScreen={true}
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      title="Sahara Model City Renala Khurd Live Location Map"
+                    />
+                    
+                    {/* Floating hint on live map */}
+                    <div className="absolute bottom-3 left-3 bg-[#090E16]/85 text-white backdrop-blur-md px-2.5 py-1 rounded-lg text-[9px] font-mono tracking-wider flex items-center gap-1.5 border border-[#C5A880]/20 pointer-events-none shadow-md">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                      <span>LIVE LOCATION MAP</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Card Footer detail with Map Legend items */}
-              <div className="mt-4 pt-3.5 border-t border-gray-100 dark:border-gray-800 grid grid-cols-3 gap-2 text-center text-[10px] font-mono">
-                <div className="space-y-0.5">
-                  <span className="block text-gray-400 uppercase">Phase A & B</span>
-                  <span className="block font-bold text-gray-900 dark:text-white">Allocations</span>
+              {/* Dynamic Footer Details depending on view mode */}
+              {viewMode === 'blueprint' ? (
+                /* Card Footer detail with Map Legend items */
+                <div className="mt-4 pt-3.5 border-t border-gray-100 dark:border-gray-800 grid grid-cols-3 gap-2 text-center text-[10px] font-mono">
+                  <div className="space-y-0.5">
+                    <span className="block text-gray-400 uppercase">Phase A & B</span>
+                    <span className="block font-bold text-gray-900 dark:text-white">Allocations</span>
+                  </div>
+                  <div className="space-y-0.5 border-l border-r border-gray-100 dark:border-gray-800">
+                    <span className="block text-gray-400 uppercase">N5 GT Highway</span>
+                    <span className="block font-bold text-emerald-500">Access</span>
+                  </div>
+                  <div className="space-y-0.5">
+                    <span className="block text-gray-400 uppercase">Document Ref</span>
+                    <span className="block font-bold text-[#C5A880]">SC-MP2026</span>
+                  </div>
                 </div>
-                <div className="space-y-0.5 border-l border-r border-gray-100 dark:border-gray-800">
-                  <span className="block text-gray-400 uppercase">N5 GT Highway</span>
-                  <span className="block font-bold text-emerald-500">Access</span>
+              ) : (
+                /* Interactive Landmarks List showing proximity to Renala Khurd landmarks */
+                <div className="mt-4 pt-3.5 border-t border-gray-100 dark:border-gray-800 space-y-2.5 text-left">
+                  <span className="block text-[10px] font-mono tracking-widest text-gray-400 uppercase">
+                    Proximity to Key Landmarks:
+                  </span>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex items-center gap-2 p-1.5 bg-gray-50 dark:bg-gray-900/40 rounded-xl border border-gray-100/50 dark:border-gray-800">
+                      <div className="p-1 bg-[#C5A880]/10 text-[#C5A880] rounded-lg shrink-0">
+                        <Navigation className="h-3.5 w-3.5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="block text-[11px] font-bold text-gray-800 dark:text-gray-200 truncate">GT Road Bypass</span>
+                        <span className="block text-[9px] font-mono text-gray-400">~0.5 km (1 min)</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 p-1.5 bg-gray-50 dark:bg-gray-900/40 rounded-xl border border-gray-100/50 dark:border-gray-800">
+                      <div className="p-1 bg-emerald-500/10 text-emerald-500 rounded-lg shrink-0">
+                        <Building className="h-3.5 w-3.5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="block text-[11px] font-bold text-gray-800 dark:text-gray-200 truncate">Mitchell's Farms</span>
+                        <span className="block text-[9px] font-mono text-gray-400">~1.5 km (3 min)</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 p-1.5 bg-gray-50 dark:bg-gray-900/40 rounded-xl border border-gray-100/50 dark:border-gray-800">
+                      <div className="p-1 bg-blue-500/10 text-blue-500 rounded-lg shrink-0">
+                        <Compass className="h-3.5 w-3.5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="block text-[11px] font-bold text-gray-800 dark:text-gray-200 truncate">Railway Station</span>
+                        <span className="block text-[9px] font-mono text-gray-400">~3.0 km (5 min)</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 p-1.5 bg-gray-50 dark:bg-gray-900/40 rounded-xl border border-gray-100/50 dark:border-gray-800">
+                      <div className="p-1 bg-[#C5A880]/10 text-[#C5A880] rounded-lg shrink-0">
+                        <MapPin className="h-3.5 w-3.5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="block text-[11px] font-bold text-gray-800 dark:text-gray-200 truncate">Ganga Power House</span>
+                        <span className="block text-[9px] font-mono text-gray-400">~4.5 km (8 min)</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-0.5">
-                  <span className="block text-gray-400 uppercase">Document Ref</span>
-                  <span className="block font-bold text-[#C5A880]">SC-MP2026</span>
-                </div>
-              </div>
+              )}
 
             </div>
           </div>

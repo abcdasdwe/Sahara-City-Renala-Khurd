@@ -272,10 +272,18 @@ export default function App() {
       const s = await getSettings();
 
       if (s) {
+        let changed = false;
         const bg = s.heroBackground;
         const isValidBg = bg && bg.trim() !== '' && (bg.startsWith('/') || bg.startsWith('data:') || bg.startsWith('blob:') || bg.startsWith('http'));
         if (!isValidBg) {
           s.heroBackground = '/sahara-bg.jpg';
+          changed = true;
+        }
+        if (!s.heroTitle || s.heroTitle.trim() === '' || s.heroTitle.trim().toLowerCase() === 'hi') {
+          s.heroTitle = 'Sahara Business City';
+          changed = true;
+        }
+        if (changed) {
           await saveSettings(s);
         }
       }
@@ -529,7 +537,7 @@ export default function App() {
                   PREMIER LUXURY HOUSING SOCIETY
                 </span>
                 <h1 id="hero-main-title" className="text-4xl sm:text-6xl font-black uppercase tracking-tight leading-tight text-[#e5f1e3]">
-                  {settings.heroTitle || 'Sahara Business City'}
+                  Sahara Business City
                 </h1>
                 <p className="text-gray-300 max-w-xl mx-auto text-sm sm:text-base font-light">
                   {settings.heroSubtitle}

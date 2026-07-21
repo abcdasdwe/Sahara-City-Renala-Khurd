@@ -405,7 +405,12 @@ export default function AdminPanel({
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     if (localSettings) {
-      await saveSettings(localSettings);
+      const sanitizedSettings = { ...localSettings };
+      if (!sanitizedSettings.heroTitle || sanitizedSettings.heroTitle.trim() === '' || sanitizedSettings.heroTitle.trim().toLowerCase() === 'hi') {
+        sanitizedSettings.heroTitle = 'Sahara Business City';
+      }
+      await saveSettings(sanitizedSettings);
+      setLocalSettings(sanitizedSettings);
       triggerToast('App Configuration updated on public website instantly!', 'success');
       onRefreshData();
     }
