@@ -485,27 +485,36 @@ export default function AdminPanel({
 
   // Export DB
   const handleExportDatabase = () => {
-    const backup = {
-      properties,
-      leads,
-      reviews,
-      blogs,
-      media,
-      settings,
-      version: DB_VERSION,
-      timestamp: new Date().toISOString()
-    };
+    try {
+      const backup = {
+        properties,
+        leads,
+        reviews,
+        blogs,
+        media,
+        settings,
+        version: DB_VERSION,
+        timestamp: new Date().toISOString()
+      };
 
-    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(backup, null, 2));
-    const downloadAnchor = document.createElement('a');
-    const today = new Date().toISOString().split('T')[0];
-    
-    downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `sahara_backup_${today}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-    triggerToast('Database exported successfully', 'success');
+      const jsonStr = JSON.stringify(backup, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+      const dlUrl = URL.createObjectURL(blob);
+      const downloadAnchor = document.createElement('a');
+      const today = new Date().toISOString().split('T')[0];
+      
+      downloadAnchor.setAttribute('href', dlUrl);
+      downloadAnchor.setAttribute('download', `sahara_backup_${today}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      URL.revokeObjectURL(dlUrl);
+      
+      triggerToast('Database exported successfully as JSON backup!', 'success');
+    } catch (err) {
+      console.error('Database export error:', err);
+      triggerToast('Error exporting database backup JSON.', 'error');
+    }
   };
 
   // Dynamic XML Sitemap.xml Generator Component Function
@@ -583,29 +592,87 @@ export default function AdminPanel({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    triggerToast('Parsing and restoring database backup...', 'info');
+
     const reader = new FileReader();
     reader.onload = async (event) => {
       try {
-        const parsed = JSON.parse(event.target?.result as string);
+        const content = event.target?.result as string;
+        const parsed = JSON.parse(content);
         
-        // Strict Schema Validation check before restoring
-        if (!parsed.properties || !parsed.leads || !parsed.reviews || !parsed.settings) {
-          triggerToast('Invalid Backup Schema. Restoring aborted.', 'error');
+        if (!parsed || typeof parsed !== 'object') {
+          triggerToast('Invalid JSON file format.', 'error');
           return;
         }
 
-        // Write all properties
-        for (const p of parsed.properties) await dbPut('properties', p);
-        for (const l of parsed.leads) await dbPut('leads', l);
-        for (const r of parsed.reviews) await dbPut('reviews', r);
-        for (const b of parsed.blogs || []) await dbPut('blogs', b);
-        for (const m of parsed.media || []) await dbPut('media', m);
-        if (parsed.settings) await saveSettings(parsed.settings);
+        const dataObj = parsed.data || parsed;
+        let itemCount = 0;
 
-        triggerToast('Full Sahara Database Restored Successfully! refreshing...', 'success');
+        if (Array.isArray(dataObj.properties)) {
+          for (const p of dataObj.properties) {
+            if (p && p.id) {
+              await dbPut('properties', p);
+              itemCount++;
+            }
+          }
+        }
+
+        if (Array.isArray(dataObj.leads)) {
+          for (const l of dataObj.leads) {
+            if (l && l.id) {
+              await dbPut('leads', l);
+              itemCount++;
+            }
+          }
+        }
+
+        if (Array.isArray(dataObj.reviews)) {
+          for (const r of dataObj.reviews) {
+            if (r && r.id) {
+              await dbPut('reviews', r);
+              itemCount++;
+            }
+          }
+        }
+
+        if (Array.isArray(dataObj.blogs)) {
+          for (const b of dataObj.blogs) {
+            if (b && b.id) {
+              await dbPut('blogs', b);
+              itemCount++;
+            }
+          }
+        }
+
+        if (Array.isArray(dataObj.media)) {
+          for (const m of dataObj.media) {
+            if (m && m.id) {
+              await dbPut('media', m);
+              itemCount++;
+            }
+          }
+        }
+
+        if (dataObj.settings && typeof dataObj.settings === 'object') {
+          await saveSettings(dataObj.settings);
+          if (setLocalSettings) {
+            setLocalSettings(dataObj.settings);
+          }
+          itemCount++;
+        }
+
+        if (itemCount === 0) {
+          triggerToast('No valid Sahara database records found in file.', 'error');
+          return;
+        }
+
+        triggerToast(`Full Sahara Database Restored (${itemCount} records updated)!`, 'success');
         onRefreshData();
       } catch (err) {
-        triggerToast('File parsing error. Ensure JSON format.', 'error');
+        console.error('Database restore error:', err);
+        triggerToast('File parsing or database restore error. Please check JSON schema.', 'error');
+      } finally {
+        e.target.value = '';
       }
     };
     reader.readAsText(file);

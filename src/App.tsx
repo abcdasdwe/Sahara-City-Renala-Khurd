@@ -288,11 +288,11 @@ export default function App() {
         }
       }
 
-      setProperties(p.sort((a,b) => b.createdDate.localeCompare(a.createdDate)));
-      setLeads(l.sort((a,b) => b.createdDate.localeCompare(a.createdDate)));
-      setReviews(r.sort((a,b) => b.createdDate.localeCompare(a.createdDate)));
-      setBlogs(b.sort((a,b) => b.createdDate.localeCompare(a.createdDate)));
-      setMedia(m);
+      setProperties((p || []).sort((a,b) => (b.createdDate || '').localeCompare(a.createdDate || '')));
+      setLeads((l || []).sort((a,b) => (b.createdDate || '').localeCompare(a.createdDate || '')));
+      setReviews((r || []).sort((a,b) => (b.createdDate || '').localeCompare(a.createdDate || '')));
+      setBlogs((b || []).sort((a,b) => (b.createdDate || '').localeCompare(a.createdDate || '')));
+      setMedia(m || []);
       if (s) {
         setSettings({ ...s });
       }
