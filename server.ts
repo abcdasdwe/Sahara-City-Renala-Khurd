@@ -206,6 +206,44 @@ const defaultDbData = {
   }
 };
 
+// Helper function to sanitize legacy property objects to match current Property interface
+function sanitizeProperty(p: any): any {
+  if (!p || typeof p !== 'object') return p;
+
+  let numericPrice = typeof p.price === 'number' ? p.price : (p.numericPrice || 0);
+  if (typeof p.price === 'string') {
+    const cleaned = p.price.replace(/[^0-9]/g, '');
+    if (cleaned) numericPrice = Number(cleaned);
+  }
+  if (!numericPrice) numericPrice = 1850000;
+
+  return {
+    id: p.id || 'SC-' + Math.floor(Math.random() * 1000),
+    title: p.title || 'Sahara City Property',
+    description: p.description || p.summary || 'Prime property in Sahara City Renala Khurd.',
+    price: numericPrice,
+    city: p.city || 'Renala Khurd',
+    area: p.area || p.marla || p.size || '5 Marla',
+    bedrooms: typeof p.bedrooms === 'number' ? p.bedrooms : 0,
+    bathrooms: typeof p.bathrooms === 'number' ? p.bathrooms : 0,
+    propertyType: p.propertyType || (p.category === 'Commercial' ? 'Commercial Plot' : 'Residential Plot'),
+    purpose: p.purpose || 'Installment',
+    images: Array.isArray(p.images) && p.images.length > 0 ? p.images : ['https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=800'],
+    mapLocation: p.mapLocation || 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3429.2885973942007!2d73.5960011!3d30.7380998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39229be4949a2a3f%3A0xe679237077a76e0d!2sSahara%20City%20Renala%20Khurd!5e0!3m2!1sen!2spk!4v1700000000000!5m2!1sen!2spk',
+    status: p.status || (p.isFeatured ? 'Featured' : 'Available'),
+    installmentDetails: p.installmentDetails || (p.monthlyInstallment ? {
+      downPayment: Number(String(p.downPayment || '').replace(/[^0-9]/g, '')) || 250000,
+      monthlyInstallment: Number(String(p.monthlyInstallment || '').replace(/[^0-9]/g, '')) || 15000,
+      quarterlyInstallment: 75000,
+      totalInstallments: 36,
+      possessionDate: '2028-12-31'
+    } : undefined),
+    availabilityCalendar: p.availabilityCalendar,
+    createdDate: p.createdDate || new Date().toISOString().split('T')[0],
+    views: typeof p.views === 'number' ? p.views : 0
+  };
+}
+
 // Helper function to read database file
 function readDbFile() {
   try {
@@ -214,7 +252,15 @@ function readDbFile() {
       if (raw && raw.trim()) {
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === 'object') {
-          return parsed;
+          // Ensure all store keys exist
+          const properties = Array.isArray(parsed.properties) ? parsed.properties.map(sanitizeProperty) : defaultDbData.properties;
+          const leads = Array.isArray(parsed.leads) ? parsed.leads : defaultDbData.leads;
+          const reviews = Array.isArray(parsed.reviews) ? parsed.reviews : defaultDbData.reviews;
+          const blogs = Array.isArray(parsed.blogs) ? parsed.blogs : defaultDbData.blogs;
+          const media = Array.isArray(parsed.media) ? parsed.media : defaultDbData.media;
+          const settings = parsed.settings && typeof parsed.settings === 'object' ? { ...defaultDbData.settings, ...parsed.settings } : defaultDbData.settings;
+
+          return { properties, leads, reviews, blogs, media, settings };
         }
       }
     }

@@ -370,7 +370,8 @@ export async function saveSettings(settings: AppSettings): Promise<AppSettings> 
 export async function seedDatabaseIfEmpty() {
   // Try syncing central database state from Express server first
   const serverData = await syncServerDatabase();
-  if (serverData && Array.isArray(serverData.properties) && serverData.properties.length > 0) {
+  if (serverData) {
+    // Server responded and is single source of truth for all clients!
     localStorage.setItem('sahara_db_seeded', 'true');
     return;
   }
@@ -546,7 +547,7 @@ export async function seedDatabaseIfEmpty() {
   ];
 
   for (const property of seedProperties) {
-    await dbPut('properties', property);
+    await dbPutLocal('properties', property);
   }
 
   // Seed Blogs
@@ -611,7 +612,7 @@ Plot buyers are invited to schedule their physical site allocation checks and re
   ];
 
   for (const blog of seedBlogs) {
-    await dbPut('blogs', blog);
+    await dbPutLocal('blogs', blog);
   }
 
   // Seed Reviews matching screenshot (4.2 rating, 222 total ratings, Anwar Shaheed area details)
@@ -664,7 +665,7 @@ Plot buyers are invited to schedule their physical site allocation checks and re
   ];
 
   for (const review of seedReviews) {
-    await dbPut('reviews', review);
+    await dbPutLocal('reviews', review);
   }
 
   // Seed Leads to show data in Dashboard immediately
@@ -703,7 +704,7 @@ Plot buyers are invited to schedule their physical site allocation checks and re
   ];
 
   for (const lead of seedLeads) {
-    await dbPut('leads', lead);
+    await dbPutLocal('leads', lead);
   }
 
   // Seed Settings
@@ -724,7 +725,7 @@ Plot buyers are invited to schedule their physical site allocation checks and re
     seoDefaultDescription: 'Browse the ultimate residential and commercial plots in Sahara City Renala Khurd on attractive installment layouts. Secure gated living, schools, Mosque and pristine parks.',
     footerCopyrightText: '© 2026 Sahara City Renala Khurd. All Rights Reserved. Designed for upscale lifestyle & secure investments.'
   };
-  await dbPut('settings', { key: 'config', value: settings });
+  await dbPutLocal('settings', { key: 'config', value: settings });
 
   // Seed Media items matching screenshot landscape categories (Residential, Parks, Commercial, Mosque, General)
   const seedMedia: MediaItem[] = [
@@ -755,7 +756,7 @@ Plot buyers are invited to schedule their physical site allocation checks and re
   ];
 
   for (const media of seedMedia) {
-    await dbPut('media', media);
+    await dbPutLocal('media', media);
   }
 
   localStorage.setItem('sahara_db_seeded', 'true');
