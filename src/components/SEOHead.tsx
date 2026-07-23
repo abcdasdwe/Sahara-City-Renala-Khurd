@@ -121,7 +121,7 @@ export default function SEOHead({ view, property, blog }: SEOHeadProps) {
             '@context': 'https://schema.org',
             '@type': 'Product',
             'name': property.title,
-            'image': property.images[0],
+            'image': property.images?.[0] || '',
             'description': property.description,
             'sku': property.id,
             'offers': {

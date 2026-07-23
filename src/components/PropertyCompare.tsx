@@ -123,7 +123,7 @@ export default function PropertyCompare({ properties, setCurrentTab, setSelected
               <div>
                 {p1 ? (
                   <div className="space-y-2 pr-4">
-                    <img src={p1.images[0]} alt={p1.title} referrerPolicy="no-referrer" className="w-full h-24 object-cover rounded-xl border border-white/5 shadow-sm" />
+                    <img src={p1.images?.[0] || ''} alt={p1.title} referrerPolicy="no-referrer" className="w-full h-24 object-cover rounded-xl border border-white/5 shadow-sm" />
                     <h3 style={{ color: '#eee1e1' }} className="text-xs font-bold leading-tight line-clamp-2 text-white">{p1.title}</h3>
                     <span className="text-[9px] font-bold tracking-widest uppercase bg-[#C5A880]/10 text-[#C5A880] border border-[#C5A880]/15 px-2 py-0.5 rounded font-mono">{p1.id}</span>
                   </div>
@@ -133,7 +133,7 @@ export default function PropertyCompare({ properties, setCurrentTab, setSelected
               <div>
                 {p2 ? (
                   <div className="space-y-2 pr-4">
-                    <img src={p2.images[0]} alt={p2.title} referrerPolicy="no-referrer" className="w-full h-24 object-cover rounded-xl border border-white/5 shadow-sm" />
+                    <img src={p2.images?.[0] || ''} alt={p2.title} referrerPolicy="no-referrer" className="w-full h-24 object-cover rounded-xl border border-white/5 shadow-sm" />
                     <h3 style={{ color: '#f8f0f0' }} className="text-xs font-bold leading-tight line-clamp-2 text-white">{p2.title}</h3>
                     <span className="text-[9px] font-bold tracking-widest uppercase bg-sky-500/10 text-sky-400 border border-sky-500/15 px-2 py-0.5 rounded font-mono">{p2.id}</span>
                   </div>
@@ -143,7 +143,7 @@ export default function PropertyCompare({ properties, setCurrentTab, setSelected
               <div>
                 {p3 ? (
                   <div className="space-y-2 pr-4">
-                    <img src={p3.images[0]} alt={p3.title} referrerPolicy="no-referrer" className="w-full h-24 object-cover rounded-xl border border-white/5 shadow-sm" />
+                    <img src={p3.images?.[0] || ''} alt={p3.title} referrerPolicy="no-referrer" className="w-full h-24 object-cover rounded-xl border border-white/5 shadow-sm" />
                     <h3 className="text-xs font-bold leading-tight line-clamp-2 text-white">{p3.title}</h3>
                     <span className="text-[9px] font-bold tracking-widest uppercase bg-indigo-500/10 text-indigo-400 border border-indigo-500/15 px-2 py-0.5 rounded font-mono">{p3.id}</span>
                   </div>

@@ -250,7 +250,7 @@ async function startServer() {
 
     if (storeName === 'settings') {
       const settingsVal = item.value || item;
-      current.settings = { ...current.settings, ...settingsVal };
+      current.settings = settingsVal;
     } else {
       const list = Array.isArray(current[storeName]) ? current[storeName] : [];
       const itemId = item.id;
@@ -293,10 +293,7 @@ async function startServer() {
       return res.status(400).json({ error: 'Settings object required' });
     }
     const current = readDbFile();
-    current.settings = {
-      ...current.settings,
-      ...newSettings
-    };
+    current.settings = newSettings;
     writeDbFile(current);
     res.json({ status: 'ok', settings: current.settings });
   });

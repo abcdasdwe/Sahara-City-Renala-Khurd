@@ -17,7 +17,7 @@ import SEOHead from './components/SEOHead';
 import MasterPlanSection from './components/MasterPlanSection';
 import { faqList } from './faqData';
 import { Property, Lead, Review, Blog, MediaItem, AppSettings } from './types';
-import { dbGetAll, dbPut, getSettings, seedDatabaseIfEmpty, saveSettings } from './lib/db';
+import { dbGetAll, dbPut, getSettings, seedDatabaseIfEmpty, saveSettings, syncServerDatabase } from './lib/db';
 import { generatePropertyPDF } from './lib/pdfGenerator';
 
 export default function App() {
@@ -269,7 +269,8 @@ export default function App() {
     console.log(`[refreshDatabaseData] [#${refreshId}] Starting database refresh at ${new Date().toISOString()}`);
 
     try {
-      console.log(`[refreshDatabaseData] [#${refreshId}] Verifying seed status...`);
+      console.log(`[refreshDatabaseData] [#${refreshId}] Syncing latest database state from central server...`);
+      await syncServerDatabase();
       await seedDatabaseIfEmpty();
       
       console.log(`[refreshDatabaseData] [#${refreshId}] Querying IndexedDB stores...`);
@@ -345,12 +346,28 @@ export default function App() {
       }
     };
 
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible') {
+        refreshDatabaseData();
+      }
+    };
+
     window.addEventListener('sahara_settings_updated', handleSettingsUpdated);
+    window.addEventListener('sahara_db_updated', refreshDatabaseData);
     window.addEventListener('storage', refreshDatabaseData);
+    window.addEventListener('visibilitychange', handleVisibilityOrFocus);
+    window.addEventListener('focus', refreshDatabaseData);
+
+    // Auto-refresh every 8 seconds so changes made in admin panel reflect on public site automatically
+    const interval = setInterval(refreshDatabaseData, 8000);
 
     return () => {
       window.removeEventListener('sahara_settings_updated', handleSettingsUpdated);
+      window.removeEventListener('sahara_db_updated', refreshDatabaseData);
       window.removeEventListener('storage', refreshDatabaseData);
+      window.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+      window.removeEventListener('focus', refreshDatabaseData);
+      clearInterval(interval);
     };
   }, []);
 
@@ -675,7 +692,7 @@ export default function App() {
                     className="group bg-white dark:bg-[#0F1A2C] border border-gray-100 dark:border-gray-850 rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-all hover:-translate-y-1 cursor-pointer"
                   >
                     <div className="relative h-56 overflow-hidden bg-gray-200">
-                      <img src={p.images[0]} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      <img src={p.images?.[0] || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=800'} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                       <span className="absolute top-4 left-4 bg-[#0F1A2C] text-[#C5A880] border border-[#C5A880]/30 text-[10px] font-bold uppercase tracking-widest py-1 px-3 rounded-full shadow-md">
                         {p.purpose === 'Installment' ? 'On Installment' : p.purpose}
                       </span>
@@ -789,7 +806,7 @@ export default function App() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="h-10 w-10 bg-[#C5A880]/15 text-[#C5A880] rounded-full flex items-center justify-center font-bold text-sm uppercase">
-                            {rev.customerName[0]}
+                            {rev.customerName?.[0] || 'S'}
                           </div>
                           <div>
                             <h4 className="font-bold text-sm text-gray-900 dark:text-white">{rev.customerName}</h4>
@@ -995,7 +1012,7 @@ export default function App() {
                     className="group bg-white dark:bg-[#0F1A2C] border border-gray-100 dark:border-gray-850 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all cursor-pointer text-left relative"
                   >
                     <div className="relative h-48 bg-gray-200">
-                      <img src={p.images[0]} alt={p.title} className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300" />
+                      <img src={p.images?.[0] || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=800'} alt={p.title} className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300" />
                       <span className="absolute top-3 left-3 bg-[#0F1A2C] text-[#C5A880] border border-[#C5A880]/30 text-[9px] font-bold uppercase tracking-widest py-1 px-2.5 rounded-full shadow-md">
                         {p.purpose === 'Installment' ? 'Easy installment' : p.purpose}
                       </span>
@@ -1079,20 +1096,20 @@ export default function App() {
             {/* Media Showcases with Lightbox compatibility */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="md:col-span-3 bg-gray-200 rounded-3xl overflow-hidden h-96 group relative">
-                <img src={currentProperty.images[0]} alt={currentProperty.title} className="w-full h-full object-cover" />
+                <img src={currentProperty.images?.[0] || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=800'} alt={currentProperty.title} className="w-full h-full object-cover" />
                 <button
-                  onClick={() => setLightboxImage(currentProperty.images[0])}
+                  onClick={() => setLightboxImage(currentProperty.images?.[0] || '')}
                   className="absolute bottom-4 right-4 bg-black/60 hover:bg-[#0F1A2C] border border-white/10 text-white font-bold text-xs uppercase px-4 py-2.5 rounded-xl cursor-pointer"
                 >
                   Gallery Lightbox View
                 </button>
               </div>
               <div className="grid grid-rows-2 gap-4">
-                <div className="bg-gray-100 dark:bg-white/5 rounded-2xl overflow-hidden h-44 cursor-pointer" onClick={() => setLightboxImage(currentProperty.images[1] || currentProperty.images[0])}>
-                  <img src={currentProperty.images[1] || currentProperty.images[0]} alt="Side-view A" className="w-full h-full object-cover rounded-2xl hover:opacity-90 transition-opacity" />
+                <div className="bg-gray-100 dark:bg-white/5 rounded-2xl overflow-hidden h-44 cursor-pointer" onClick={() => setLightboxImage(currentProperty.images?.[1] || currentProperty.images?.[0] || '')}>
+                  <img src={currentProperty.images?.[1] || currentProperty.images?.[0] || ''} alt="Side-view A" className="w-full h-full object-cover rounded-2xl hover:opacity-90 transition-opacity" />
                 </div>
-                <div className="bg-gray-100 dark:bg-white/5 rounded-2xl overflow-hidden h-44 cursor-pointer" onClick={() => setLightboxImage(currentProperty.images[2] || currentProperty.images[0])}>
-                  <img src={currentProperty.images[2] || currentProperty.images[0]} alt="Side-view B" className="w-full h-full object-cover rounded-2xl hover:opacity-90 transition-opacity" />
+                <div className="bg-gray-100 dark:bg-white/5 rounded-2xl overflow-hidden h-44 cursor-pointer" onClick={() => setLightboxImage(currentProperty.images?.[2] || currentProperty.images?.[0] || '')}>
+                  <img src={currentProperty.images?.[2] || currentProperty.images?.[0] || ''} alt="Side-view B" className="w-full h-full object-cover rounded-2xl hover:opacity-90 transition-opacity" />
                 </div>
               </div>
             </div>
@@ -1730,7 +1747,7 @@ export default function App() {
 
             {/* Content body supporting raw lines */}
             <div className="prose dark:prose-invert text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed font-light text-left space-y-4">
-              {currentBlog.content.split('\n\n').map((para, idx) => {
+              {(currentBlog.content || '').split('\n\n').map((para, idx) => {
                 if (para.startsWith('###')) {
                   return <h3 key={idx} className="text-base font-bold text-gray-900 dark:text-[#C5A880] uppercase tracking-wide pt-2">{para.replace('###', '')}</h3>;
                 }

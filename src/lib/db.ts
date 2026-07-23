@@ -91,6 +91,23 @@ export async function dbGet<T>(storeName: string, id: string): Promise<T | null>
   });
 }
 
+// Helper to clear a local object store before syncing fresh server data
+export async function dbClearStore(storeName: string): Promise<void> {
+  try {
+    const db = await openDatabase();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(storeName, 'readwrite');
+      const store = transaction.objectStore(storeName);
+      const request = store.clear();
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error || request.error);
+      request.onerror = () => reject(request.error);
+    });
+  } catch (err) {
+    console.warn(`Failed clearing store "${storeName}":`, err);
+  }
+}
+
 // Server sync helpers for cross-browser synchronization
 export async function syncServerDatabase(): Promise<any> {
   try {
@@ -98,20 +115,25 @@ export async function syncServerDatabase(): Promise<any> {
     if (res.ok) {
       const data = await res.json();
       if (data) {
-        // Sync retrieved server data directly into local IndexedDB for fast access
+        // Clear and sync retrieved server data into local IndexedDB
         if (Array.isArray(data.properties)) {
+          await dbClearStore('properties');
           for (const item of data.properties) await dbPutLocal('properties', item);
         }
         if (Array.isArray(data.leads)) {
+          await dbClearStore('leads');
           for (const item of data.leads) await dbPutLocal('leads', item);
         }
         if (Array.isArray(data.reviews)) {
+          await dbClearStore('reviews');
           for (const item of data.reviews) await dbPutLocal('reviews', item);
         }
         if (Array.isArray(data.blogs)) {
+          await dbClearStore('blogs');
           for (const item of data.blogs) await dbPutLocal('blogs', item);
         }
         if (Array.isArray(data.media)) {
+          await dbClearStore('media');
           for (const item of data.media) await dbPutLocal('media', item);
         }
         if (data.settings) {
@@ -162,6 +184,14 @@ export async function dbPut<T>(storeName: string, item: T): Promise<T> {
     console.warn('Failed to sync dbPut to server:', e);
   }
 
+  try {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('sahara_db_updated'));
+    }
+  } catch (e) {
+    // ignore
+  }
+
   return item;
 }
 
@@ -186,6 +216,14 @@ export async function dbDelete(storeName: string, id: string): Promise<string> {
     });
   } catch (e) {
     console.warn('Failed to sync dbDelete to server:', e);
+  }
+
+  try {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('sahara_db_updated'));
+    }
+  } catch (e) {
+    // ignore
   }
 
   return id;
@@ -320,6 +358,7 @@ export async function saveSettings(settings: AppSettings): Promise<AppSettings> 
   // 4. Dispatch real-time custom event to immediately notify mounted UI components (e.g. MasterPlanSection, App)
   try {
     window.dispatchEvent(new CustomEvent('sahara_settings_updated', { detail: settings }));
+    window.dispatchEvent(new CustomEvent('sahara_db_updated'));
   } catch (e) {
     console.warn('Error dispatching settings update event:', e);
   }
