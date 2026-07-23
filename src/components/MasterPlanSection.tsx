@@ -100,7 +100,12 @@ export default function MasterPlanSection({ settings }: MasterPlanSectionProps) 
       const imgX = (210 - imgWidth) / 2;
       const imgY = 66;
 
-      doc.addImage(img, 'JPEG', imgX, imgY, imgWidth, imgHeight);
+      const imgFormat = masterPlanImg.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+      try {
+        doc.addImage(img, imgFormat, imgX, imgY, imgWidth, imgHeight);
+      } catch (e) {
+        console.warn('doc.addImage failed:', e);
+      }
 
       // Footer
       doc.setFillColor(primaryColor.r, primaryColor.g, primaryColor.b);

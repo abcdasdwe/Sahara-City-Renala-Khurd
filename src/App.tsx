@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Building2, Search, MapPin, Bed, Bath, Heart, Scale, Info, ArrowRight, 
   Phone, Mail, Check, Star, HelpCircle, FileText, Send, Calendar, ChevronRight,
@@ -259,11 +259,20 @@ export default function App() {
   const [contactMessage, setContactMessage] = useState('');
   const [contactStatus, setContactStatus] = useState(false);
 
+  // Ref to track latest refresh ID for detecting race conditions
+  const refreshSequenceRef = useRef<number>(0);
+
   // Init & Sync Data from browser IndexedDB
   const refreshDatabaseData = async () => {
+    const refreshId = ++refreshSequenceRef.current;
+    const startTime = performance.now();
+    console.log(`[refreshDatabaseData] [#${refreshId}] Starting database refresh at ${new Date().toISOString()}`);
+
     try {
+      console.log(`[refreshDatabaseData] [#${refreshId}] Verifying seed status...`);
       await seedDatabaseIfEmpty();
       
+      console.log(`[refreshDatabaseData] [#${refreshId}] Querying IndexedDB stores...`);
       const p = await dbGetAll<Property>('properties');
       const l = await dbGetAll<Lead>('leads');
       const r = await dbGetAll<Review>('reviews');
@@ -271,19 +280,41 @@ export default function App() {
       const m = await dbGetAll<MediaItem>('media');
       const s = await getSettings();
 
+      // Check for race condition: if another refresh was triggered in the meantime
+      if (refreshId !== refreshSequenceRef.current) {
+        console.warn(`[refreshDatabaseData] [#${refreshId}] Stale refresh detected! Latest is #${refreshSequenceRef.current}. Aborting state application.`);
+        return;
+      }
+
+      console.log(`[refreshDatabaseData] [#${refreshId}] Fetched data summary:`, {
+        propertiesCount: p?.length || 0,
+        leadsCount: l?.length || 0,
+        reviewsCount: r?.length || 0,
+        blogsCount: b?.length || 0,
+        mediaCount: m?.length || 0,
+        hasSettings: !!s,
+        heroTitle: s?.heroTitle,
+        hasHeroBackground: !!s?.heroBackground,
+        hasMasterPlanPdf: !!s?.masterPlanPdf,
+        hasMasterPlanImg: !!s?.masterPlanImage
+      });
+
       if (s) {
         let changed = false;
         const bg = s.heroBackground;
         const isValidBg = bg && bg.trim() !== '' && (bg.startsWith('/') || bg.startsWith('data:') || bg.startsWith('blob:') || bg.startsWith('http'));
         if (!isValidBg) {
+          console.warn(`[refreshDatabaseData] [#${refreshId}] Hero background invalid or empty ("${bg}"). Resetting default.`);
           s.heroBackground = '/sahara-bg.jpg';
           changed = true;
         }
         if (!s.heroTitle || s.heroTitle.trim() === '') {
+          console.warn(`[refreshDatabaseData] [#${refreshId}] Hero title empty. Setting default.`);
           s.heroTitle = 'Sahara Business City';
           changed = true;
         }
         if (changed) {
+          console.log(`[refreshDatabaseData] [#${refreshId}] Saving sanitized default settings back to DB...`);
           await saveSettings(s);
         }
       }
@@ -296,8 +327,11 @@ export default function App() {
       if (s) {
         setSettings({ ...s });
       }
+
+      const duration = (performance.now() - startTime).toFixed(2);
+      console.log(`[refreshDatabaseData] [#${refreshId}] Successfully synchronized React state in ${duration}ms`);
     } catch (err) {
-      console.error('Error fetching data from IndexedDB database stores:', err);
+      console.error(`[refreshDatabaseData] [#${refreshId}] Error fetching data from IndexedDB:`, err);
     }
   };
 
@@ -540,15 +574,16 @@ export default function App() {
               <img 
                 src={cleanHeroBg} 
                 alt="Sahara City" 
-                className="absolute inset-0 w-full h-full object-cover z-0" 
-                referrerPolicy="no-referrer"
+                className="absolute inset-0 w-full h-full object-cover z-0 transition-opacity duration-500" 
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80';
+                  if (cleanHeroBg !== '/sahara-bg.jpg') {
+                    (e.target as HTMLImageElement).src = '/sahara-bg.jpg';
+                  }
                 }}
               />
               <div 
                 className="absolute inset-0 z-10" 
-                style={{ backgroundImage: 'linear-gradient(to bottom, rgba(9,14,22,0.85), rgba(9,14,22,0.9))' }}
+                style={{ backgroundImage: 'linear-gradient(to bottom, rgba(9,14,22,0.35), rgba(9,14,22,0.65))' }}
               />
               <div className="relative max-w-4xl space-y-4 z-20">
                 <span className="inline-block border border-[#C5A880] text-[#C5A880] text-[10px] sm:text-xs font-bold uppercase tracking-widest py-1 px-4 rounded-full">

@@ -92,16 +92,32 @@ export async function dbGet<T>(storeName: string, id: string): Promise<T | null>
 }
 
 export async function dbPut<T>(storeName: string, item: T): Promise<T> {
+  const timestamp = new Date().toISOString();
+  console.log(`[dbPut] [${timestamp}] Executing write on store: "${storeName}"`, item);
   const db = await openDatabase();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(storeName, 'readwrite');
     const store = transaction.objectStore(storeName);
     const request = store.put(item);
 
-    transaction.oncomplete = () => resolve(item);
-    transaction.onerror = () => reject(transaction.error || request.error);
-    transaction.onabort = () => reject(transaction.error || request.error);
-    request.onerror = () => reject(request.error);
+    transaction.oncomplete = () => {
+      console.log(`[dbPut] [${new Date().toISOString()}] Successfully completed write on store: "${storeName}"`);
+      resolve(item);
+    };
+    transaction.onerror = () => {
+      const err = transaction.error || request.error;
+      console.error(`[dbPut] [${new Date().toISOString()}] Error on store "${storeName}":`, err);
+      reject(err);
+    };
+    transaction.onabort = () => {
+      const err = transaction.error || request.error;
+      console.error(`[dbPut] [${new Date().toISOString()}] Transaction aborted on store "${storeName}":`, err);
+      reject(err);
+    };
+    request.onerror = () => {
+      console.error(`[dbPut] [${new Date().toISOString()}] Request error on store "${storeName}":`, request.error);
+      reject(request.error);
+    };
   });
 }
 
@@ -137,9 +153,10 @@ export async function getSettings(): Promise<AppSettings> {
     const cached = localStorage.getItem('sahara_app_settings');
     if (cached) {
       try {
-        settings = JSON.parse(cached);
-        if (settings) {
-          // Persist back to IndexedDB so they stay aligned
+        const cachedSettings = JSON.parse(cached);
+        if (cachedSettings) {
+          settings = cachedSettings;
+          // Only sync back to IndexedDB if it doesn't risk overwriting IndexedDB with a stripped fallback
           await dbPut('settings', { key: 'config', value: settings });
         }
       } catch (err) {
@@ -150,9 +167,25 @@ export async function getSettings(): Promise<AppSettings> {
 
   if (settings) {
     try {
+      // Safe cache attempt to localStorage for fast synchronous recovery
       localStorage.setItem('sahara_app_settings', JSON.stringify(settings));
     } catch (e) {
-      // ignore
+      // Quota exceeded is expected when settings contain large image/PDF Data URIs
+      try {
+        const lightweight = { ...settings };
+        if (lightweight.masterPlanPdf && lightweight.masterPlanPdf.length > 300000) {
+          delete lightweight.masterPlanPdf;
+        }
+        if (lightweight.masterPlanImage && lightweight.masterPlanImage.length > 300000) {
+          delete lightweight.masterPlanImage;
+        }
+        if (lightweight.heroBackground && lightweight.heroBackground.length > 500000) {
+          lightweight.heroBackground = '/sahara-bg.jpg';
+        }
+        localStorage.setItem('sahara_app_settings', JSON.stringify(lightweight));
+      } catch (err) {
+        // ignore
+      }
     }
     return settings;
   }
@@ -187,7 +220,7 @@ export async function getSettings(): Promise<AppSettings> {
 }
 
 export async function saveSettings(settings: AppSettings): Promise<AppSettings> {
-  // 1. Save to IndexedDB
+  // 1. Always save the FULL settings object directly into IndexedDB first
   try {
     await dbPut('settings', { key: 'config', value: settings });
   } catch (err) {
@@ -202,11 +235,14 @@ export async function saveSettings(settings: AppSettings): Promise<AppSettings> 
     console.warn('localStorage quota exceeded. Saving lightweight settings backup without large blobs:', err);
     try {
       const lightweight = { ...settings };
-      if (lightweight.masterPlanPdf && lightweight.masterPlanPdf.length > 500000) {
+      if (lightweight.masterPlanPdf && lightweight.masterPlanPdf.length > 300000) {
         delete lightweight.masterPlanPdf;
       }
-      if (lightweight.masterPlanImage && lightweight.masterPlanImage.length > 500000) {
+      if (lightweight.masterPlanImage && lightweight.masterPlanImage.length > 300000) {
         delete lightweight.masterPlanImage;
+      }
+      if (lightweight.heroBackground && lightweight.heroBackground.length > 500000) {
+        lightweight.heroBackground = '/sahara-bg.jpg';
       }
       localStorage.setItem('sahara_app_settings', JSON.stringify(lightweight));
     } catch (e) {
@@ -214,7 +250,7 @@ export async function saveSettings(settings: AppSettings): Promise<AppSettings> 
     }
   }
 
-  // 3. Dispatch real-time custom event to immediately notify mounted UI components (e.g. MasterPlanSection)
+  // 3. Dispatch real-time custom event to immediately notify mounted UI components (e.g. MasterPlanSection, App)
   try {
     window.dispatchEvent(new CustomEvent('sahara_settings_updated', { detail: settings }));
   } catch (e) {
