@@ -542,6 +542,9 @@ export default function App() {
                 alt="Sahara City" 
                 className="absolute inset-0 w-full h-full object-cover z-0" 
                 referrerPolicy="no-referrer"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80';
+                }}
               />
               <div 
                 className="absolute inset-0 z-10" 
@@ -552,7 +555,7 @@ export default function App() {
                   PREMIER LUXURY HOUSING SOCIETY
                 </span>
                 <h1 id="hero-main-title" className="text-4xl sm:text-6xl font-black uppercase tracking-tight leading-tight text-[#e5f1e3]">
-                  Sahara Business City
+                  {settings.heroTitle || 'Sahara Business City'}
                 </h1>
                 <p className="text-gray-300 max-w-xl mx-auto text-sm sm:text-base font-light">
                   {settings.heroSubtitle}
