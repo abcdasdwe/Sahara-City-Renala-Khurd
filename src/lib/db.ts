@@ -91,39 +91,83 @@ export async function dbGet<T>(storeName: string, id: string): Promise<T | null>
   });
 }
 
-export async function dbPut<T>(storeName: string, item: T): Promise<T> {
-  const timestamp = new Date().toISOString();
-  console.log(`[dbPut] [${timestamp}] Executing write on store: "${storeName}"`, item);
+// Server sync helpers for cross-browser synchronization
+export async function syncServerDatabase(): Promise<any> {
+  try {
+    const res = await fetch('/api/db');
+    if (res.ok) {
+      const data = await res.json();
+      if (data) {
+        // Sync retrieved server data directly into local IndexedDB for fast access
+        if (Array.isArray(data.properties)) {
+          for (const item of data.properties) await dbPutLocal('properties', item);
+        }
+        if (Array.isArray(data.leads)) {
+          for (const item of data.leads) await dbPutLocal('leads', item);
+        }
+        if (Array.isArray(data.reviews)) {
+          for (const item of data.reviews) await dbPutLocal('reviews', item);
+        }
+        if (Array.isArray(data.blogs)) {
+          for (const item of data.blogs) await dbPutLocal('blogs', item);
+        }
+        if (Array.isArray(data.media)) {
+          for (const item of data.media) await dbPutLocal('media', item);
+        }
+        if (data.settings) {
+          await dbPutLocal('settings', { key: 'config', value: data.settings });
+          try {
+            localStorage.setItem('sahara_app_settings', JSON.stringify(data.settings));
+          } catch (e) {
+            // ignore
+          }
+        }
+        return data;
+      }
+    }
+  } catch (err) {
+    console.warn('Server sync fetch failed, falling back to local storage:', err);
+  }
+  return null;
+}
+
+// Low-level database helper for local writing without recursive API calling
+async function dbPutLocal<T>(storeName: string, item: T): Promise<T> {
   const db = await openDatabase();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(storeName, 'readwrite');
     const store = transaction.objectStore(storeName);
     const request = store.put(item);
-
-    transaction.oncomplete = () => {
-      console.log(`[dbPut] [${new Date().toISOString()}] Successfully completed write on store: "${storeName}"`);
-      resolve(item);
-    };
-    transaction.onerror = () => {
-      const err = transaction.error || request.error;
-      console.error(`[dbPut] [${new Date().toISOString()}] Error on store "${storeName}":`, err);
-      reject(err);
-    };
-    transaction.onabort = () => {
-      const err = transaction.error || request.error;
-      console.error(`[dbPut] [${new Date().toISOString()}] Transaction aborted on store "${storeName}":`, err);
-      reject(err);
-    };
-    request.onerror = () => {
-      console.error(`[dbPut] [${new Date().toISOString()}] Request error on store "${storeName}":`, request.error);
-      reject(request.error);
-    };
+    transaction.oncomplete = () => resolve(item);
+    transaction.onerror = () => reject(transaction.error || request.error);
+    request.onerror = () => reject(request.error);
   });
+}
+
+export async function dbPut<T>(storeName: string, item: T): Promise<T> {
+  const timestamp = new Date().toISOString();
+  console.log(`[dbPut] [${timestamp}] Executing write on store: "${storeName}"`, item);
+  
+  // 1. Put item locally in IndexedDB
+  await dbPutLocal(storeName, item);
+
+  // 2. Put item on central Express server so all browsers receive update
+  try {
+    await fetch('/api/db/put', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ storeName, item })
+    });
+  } catch (e) {
+    console.warn('Failed to sync dbPut to server:', e);
+  }
+
+  return item;
 }
 
 export async function dbDelete(storeName: string, id: string): Promise<string> {
   const db = await openDatabase();
-  return new Promise((resolve, reject) => {
+  await new Promise((resolve, reject) => {
     const transaction = db.transaction(storeName, 'readwrite');
     const store = transaction.objectStore(storeName);
     const request = store.delete(id);
@@ -133,6 +177,18 @@ export async function dbDelete(storeName: string, id: string): Promise<string> {
     transaction.onabort = () => reject(transaction.error || request.error);
     request.onerror = () => reject(request.error);
   });
+
+  try {
+    await fetch('/api/db/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ storeName, id })
+    });
+  } catch (e) {
+    console.warn('Failed to sync dbDelete to server:', e);
+  }
+
+  return id;
 }
 
 // Specific wrappers
@@ -222,12 +278,23 @@ export async function getSettings(): Promise<AppSettings> {
 export async function saveSettings(settings: AppSettings): Promise<AppSettings> {
   // 1. Always save the FULL settings object directly into IndexedDB first
   try {
-    await dbPut('settings', { key: 'config', value: settings });
+    await dbPutLocal('settings', { key: 'config', value: settings });
   } catch (err) {
     console.error('Error persisting settings to IndexedDB:', err);
   }
 
-  // 2. Cache in localStorage for fast synchronous recovery across reloads
+  // 2. Post settings to central Express server so all browsers receive update
+  try {
+    await fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings)
+    });
+  } catch (e) {
+    console.warn('Failed to sync settings to server:', e);
+  }
+
+  // 3. Cache in localStorage for fast synchronous recovery across reloads
   try {
     localStorage.setItem('sahara_app_settings', JSON.stringify(settings));
   } catch (err) {
@@ -250,7 +317,7 @@ export async function saveSettings(settings: AppSettings): Promise<AppSettings> 
     }
   }
 
-  // 3. Dispatch real-time custom event to immediately notify mounted UI components (e.g. MasterPlanSection, App)
+  // 4. Dispatch real-time custom event to immediately notify mounted UI components (e.g. MasterPlanSection, App)
   try {
     window.dispatchEvent(new CustomEvent('sahara_settings_updated', { detail: settings }));
   } catch (e) {
@@ -262,6 +329,13 @@ export async function saveSettings(settings: AppSettings): Promise<AppSettings> 
 
 // Seed Database Function
 export async function seedDatabaseIfEmpty() {
+  // Try syncing central database state from Express server first
+  const serverData = await syncServerDatabase();
+  if (serverData && Array.isArray(serverData.properties) && serverData.properties.length > 0) {
+    localStorage.setItem('sahara_db_seeded', 'true');
+    return;
+  }
+
   // Prevent re-seeding if database has already been initialized in this environment
   if (localStorage.getItem('sahara_db_seeded') === 'true') {
     return;
