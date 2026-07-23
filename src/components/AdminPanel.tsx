@@ -2361,11 +2361,17 @@ export default function AdminPanel({
                                     triggerToast('Processing and compressing background image...', 'info');
                                     const compressedDataUrl = await compressImage(file);
                                     if (localSettings) {
-                                      setLocalSettings({ ...localSettings, heroBackground: compressedDataUrl });
-                                      triggerToast('New high-performance compressed background image loaded! Click Synchronize to apply to website.', 'success');
+                                      const updated = { ...localSettings, heroBackground: compressedDataUrl };
+                                      setLocalSettings(updated);
+                                      await saveSettings(updated);
+                                      onRefreshData();
+                                      triggerToast('Hero background image updated & published to public website instantly!', 'success');
                                     }
                                   } catch (err) {
+                                    console.error(err);
                                     triggerToast('Failed to process uploaded background image.', 'error');
+                                  } finally {
+                                    e.target.value = '';
                                   }
                                 }
                               }}
@@ -2374,9 +2380,12 @@ export default function AdminPanel({
                           </label>
                           <button
                             type="button"
-                            onClick={() => {
+                            onClick={async () => {
                               if (localSettings) {
-                                setLocalSettings({ ...localSettings, heroBackground: '/sahara-bg.jpg' });
+                                const updated = { ...localSettings, heroBackground: '/sahara-bg.jpg' };
+                                setLocalSettings(updated);
+                                await saveSettings(updated);
+                                onRefreshData();
                                 triggerToast('Reset background to Sahara City standard master plan rendering!', 'success');
                               }
                             }}
@@ -2440,7 +2449,10 @@ export default function AdminPanel({
                                           triggerToast('Blueprint image uploaded & published to public website instantly!', 'success');
                                         }
                                       } catch (err) {
+                                        console.error(err);
                                         triggerToast('Error processing blueprint image.', 'error');
+                                      } finally {
+                                        e.target.value = '';
                                       }
                                     }
                                   }}
@@ -2495,6 +2507,7 @@ export default function AdminPanel({
                                     if (file) {
                                       if (file.size > 100 * 1024 * 1024) {
                                         triggerToast('PDF is too large! Max allowed is 100MB.', 'error');
+                                        e.target.value = '';
                                         return;
                                       }
                                       triggerToast('Reading master plan PDF file...', 'info');
@@ -2515,6 +2528,7 @@ export default function AdminPanel({
                                       };
                                       reader.onerror = () => triggerToast('Failed to read PDF.', 'error');
                                       reader.readAsDataURL(file);
+                                      e.target.value = '';
                                     }
                                   }}
                                   className="hidden"
