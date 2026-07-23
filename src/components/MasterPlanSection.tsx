@@ -8,10 +8,16 @@ import {
   ShieldCheck, 
   Building, 
   TreePine, 
-  Layers, 
   Map as MapIcon,
   Navigation,
-  Sparkles
+  Sparkles,
+  Download,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  X,
+  Eye,
+  CheckCircle2
 } from 'lucide-react';
 import { AppSettings } from '../types';
 import defaultMasterPlanImg from '../assets/images/sahara_society_master_plan_new_1784626943086.jpg';
@@ -23,6 +29,10 @@ interface MasterPlanSectionProps {
 export default function MasterPlanSection({ settings }: MasterPlanSectionProps) {
   const [generating, setGenerating] = useState(false);
   const [viewMode, setViewMode] = useState<'blueprint' | 'interactive'>('blueprint');
+
+  // Lightbox Modal states
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [zoomScale, setZoomScale] = useState(1);
 
   const masterPlanImg = settings?.masterPlanImage || defaultMasterPlanImg;
 
@@ -125,7 +135,7 @@ export default function MasterPlanSection({ settings }: MasterPlanSectionProps) 
       doc.text('Contact Helpline: 0306 2444 405 / 0342 2444 405 • Official Portal: www.saharacityrenala.com', 15, 290);
 
       // Save/Download the PDF File
-      doc.save('Sahara_City_Master_Plan.pdf');
+      doc.save(settings?.masterPlanPdfName || 'Sahara_City_Master_Plan.pdf');
       setGenerating(false);
     };
 
@@ -134,6 +144,15 @@ export default function MasterPlanSection({ settings }: MasterPlanSectionProps) 
       doc.save('Sahara_City_Master_Plan.pdf');
       setGenerating(false);
     };
+  };
+
+  const handleDownloadImage = () => {
+    const link = document.createElement('a');
+    link.href = masterPlanImg;
+    link.download = 'Sahara_City_Master_Plan_Blueprint.jpg';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -198,24 +217,42 @@ export default function MasterPlanSection({ settings }: MasterPlanSectionProps) 
               </div>
             </div>
 
-            {/* View Full Master Plan Button */}
-            <div className="pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+            {/* View Full Master Plan & Download Suite Buttons */}
+            <div className="pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <button
+                onClick={() => {
+                  setZoomScale(1);
+                  setIsLightboxOpen(true);
+                }}
+                className="bg-[#C5A880] hover:bg-[#b8976d] text-[#090E16] font-extrabold text-xs uppercase tracking-wider py-3.5 px-6 rounded-2xl cursor-pointer shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 font-mono group"
+              >
+                <Maximize2 className="h-4.5 w-4.5 transition-transform group-hover:scale-110" />
+                <span>View Full Blueprint</span>
+              </button>
+
               <button
                 onClick={handleOpenPDF}
                 disabled={generating}
-                className="bg-[#C5A880] hover:bg-[#b8976d] disabled:bg-gray-400 text-[#090E16] font-bold text-xs uppercase tracking-wider py-3.5 px-6 rounded-2xl cursor-pointer shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 font-mono group"
+                className="bg-[#090E16] hover:bg-black dark:bg-white/10 dark:hover:bg-white/20 text-white dark:text-white border border-[#C5A880]/30 font-bold text-xs uppercase tracking-wider py-3.5 px-5 rounded-2xl cursor-pointer shadow-md transition-all flex items-center justify-center gap-2 font-mono"
               >
-                <FileText className="h-4.5 w-4.5 transition-transform group-hover:scale-110" />
-                {generating ? 'Compiling Map PDF...' : 'View Full Master Plan'}
+                <FileText className="h-4.5 w-4.5 text-red-400" />
+                <span>{generating ? 'Compiling PDF...' : 'Download PDF'}</span>
               </button>
-              <div className="text-left py-1 sm:py-0">
-                <span className="block text-[10px] text-[#C5A880] font-bold uppercase tracking-widest font-mono">
-                  File Specs
-                </span>
-                <span className="block text-xs text-gray-500 dark:text-gray-400 font-medium">
-                  PDF Format (A4 Resolution, Verified Layout)
-                </span>
-              </div>
+
+              <button
+                onClick={handleDownloadImage}
+                className="bg-gray-100 hover:bg-gray-200 dark:bg-black/40 dark:hover:bg-black/60 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-800 font-bold text-xs uppercase tracking-wider py-3.5 px-4 rounded-2xl cursor-pointer transition-all flex items-center justify-center gap-2 font-mono"
+                title="Download High Definition Map Image"
+              >
+                <Download className="h-4.5 w-4.5 text-[#C5A880]" />
+                <span className="hidden sm:inline">Image</span>
+              </button>
+            </div>
+
+            <div className="text-left pt-1">
+              <span className="block text-[10px] text-gray-400 font-medium">
+                {settings?.masterPlanPdf ? `Custom PDF Active (${settings.masterPlanPdfName || 'Official_Master_Plan.pdf'})` : 'Auto-generated PDF & High-Res Vector Map'}
+              </span>
             </div>
           </div>
 
@@ -243,7 +280,7 @@ export default function MasterPlanSection({ settings }: MasterPlanSectionProps) 
                       : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                   }`}
                 >
-                  <Layers className="h-4 w-4" />
+                  <Eye className="h-4 w-4" />
                   Blueprint
                 </button>
                 <button
@@ -266,37 +303,40 @@ export default function MasterPlanSection({ settings }: MasterPlanSectionProps) 
                 {viewMode === 'blueprint' ? (
                   // Blueprint view
                   <div 
-                    onClick={handleOpenPDF}
+                    onClick={() => {
+                      setZoomScale(1);
+                      setIsLightboxOpen(true);
+                    }}
                     className="relative w-full h-full cursor-pointer group/blueprint"
                   >
                     <img
                       src={masterPlanImg}
-                      alt="Official Sahara City Renala Khurd Master Plan showing residential blocks, commercial areas, roads, parks, and amenities."
+                      alt="Official Sahara City Renala Khurd Master Plan"
                       className="w-full h-full object-cover select-none transition-transform duration-700 ease-out group-hover/blueprint:scale-105"
                       loading="lazy"
                       referrerPolicy="no-referrer"
                     />
 
                     {/* Ambient dark vignette gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 opacity-80 group-hover/blueprint:opacity-40 transition-opacity duration-500" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 opacity-80 group-hover/blueprint:opacity-40 transition-opacity duration-500" />
 
                     {(settings?.masterPlanImage || settings?.masterPlanPdf) && (
                       <div className="absolute top-3 left-3 bg-[#090E16]/90 text-[#C5A880] backdrop-blur-md px-2.5 py-1 rounded-lg text-[9px] font-mono font-bold tracking-wider flex items-center gap-1.5 border border-[#C5A880]/30 shadow-md">
                         <Sparkles className="h-3 w-3 text-[#C5A880] animate-pulse" />
-                        <span>OFFICIAL UPLOADED BLUEPRINT</span>
+                        <span>OFFICIAL PUBLISHED PLAN</span>
                       </div>
                     )}
 
                     {/* Animated interactive zoom overlay */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/65 opacity-0 group-hover/blueprint:opacity-100 transition-opacity duration-500 backdrop-blur-[2px]">
                       <div className="p-3 bg-[#C5A880] text-[#090E16] rounded-full shadow-lg scale-75 group-hover/blueprint:scale-100 transition-transform duration-500">
-                        <Maximize2 className="h-6 w-6 animate-pulse" />
+                        <Maximize2 className="h-6 w-6" />
                       </div>
                       <span className="text-white font-mono text-[10px] font-bold uppercase tracking-widest mt-3.5">
-                        Open PDF Document
+                        Expand Fullscreen
                       </span>
                       <span className="text-gray-300 text-[9px] px-6 text-center mt-1 font-light leading-relaxed">
-                        Access high-resolution vector layout plan in a new tab
+                        Interactive zoom & high-res blueprint viewer
                       </span>
                     </div>
                   </div>
@@ -394,6 +434,103 @@ export default function MasterPlanSection({ settings }: MasterPlanSectionProps) 
 
         </div>
       </div>
+
+      {/* FULLSCREEN BLUEPRINT LIGHTBOX MODAL */}
+      {isLightboxOpen && (
+        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-lg flex flex-col justify-between p-4 sm:p-6 animate-fade-in font-sans">
+          {/* Lightbox Header Bar */}
+          <div className="flex items-center justify-between border-b border-gray-800 pb-4 text-white">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-[#C5A880] text-black rounded-xl">
+                <MapIcon className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-sm sm:text-base text-white uppercase tracking-wider">
+                  Sahara City Renala Khurd — Master Plan Blueprint
+                </h3>
+                <span className="text-[10px] text-[#C5A880] font-mono uppercase tracking-widest block">
+                  Interactive Resolution Mode • Zoom ({Math.round(zoomScale * 100)}%)
+                </span>
+              </div>
+            </div>
+
+            {/* Action controls */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setZoomScale(prev => Math.min(prev + 0.25, 3))}
+                className="p-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-xl border border-gray-800 cursor-pointer"
+                title="Zoom In"
+              >
+                <ZoomIn className="h-4.5 w-4.5 text-[#C5A880]" />
+              </button>
+              <button
+                onClick={() => setZoomScale(prev => Math.max(prev - 0.25, 0.5))}
+                className="p-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-xl border border-gray-800 cursor-pointer"
+                title="Zoom Out"
+              >
+                <ZoomOut className="h-4.5 w-4.5 text-[#C5A880]" />
+              </button>
+              <button
+                onClick={() => setZoomScale(1)}
+                className="p-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-xl border border-gray-800 cursor-pointer"
+                title="Reset Zoom"
+              >
+                <RotateCcw className="h-4.5 w-4.5 text-gray-400" />
+              </button>
+
+              <div className="h-6 w-px bg-gray-800 mx-1" />
+
+              <button
+                onClick={handleDownloadImage}
+                className="bg-gray-900 hover:bg-gray-800 text-white px-3 py-2 rounded-xl border border-gray-800 text-xs font-bold uppercase tracking-wider cursor-pointer flex items-center gap-1.5"
+              >
+                <Download className="h-4 w-4 text-[#C5A880]" />
+                <span className="hidden sm:inline">Image</span>
+              </button>
+
+              <button
+                onClick={handleOpenPDF}
+                disabled={generating}
+                className="bg-[#C5A880] hover:bg-[#b8976d] text-black px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer flex items-center gap-1.5 shadow-md"
+              >
+                <FileText className="h-4 w-4" />
+                <span>{generating ? 'PDF...' : 'Download PDF'}</span>
+              </button>
+
+              <button
+                onClick={() => setIsLightboxOpen(false)}
+                className="p-2.5 bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white rounded-xl transition-colors cursor-pointer ml-2"
+                title="Close Lightbox"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Lightbox Center Image Viewport */}
+          <div className="flex-1 overflow-auto flex items-center justify-center p-4 my-2 select-none">
+            <div 
+              className="transition-transform duration-200 ease-out max-w-full max-h-full flex items-center justify-center"
+              style={{ transform: `scale(${zoomScale})` }}
+            >
+              <img
+                src={masterPlanImg}
+                alt="Master Plan Fullscreen High-Res Blueprint"
+                className="max-h-[80vh] w-auto object-contain rounded-xl shadow-2xl border border-gray-800"
+              />
+            </div>
+          </div>
+
+          {/* Lightbox Footer Bar */}
+          <div className="border-t border-gray-800 pt-3 flex flex-col sm:flex-row justify-between items-center text-[10px] text-gray-400 font-mono gap-2">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+              <span>Official Master Plan Document • Verification Code: SC-MP2026</span>
+            </div>
+            <span>Use Zoom Controls or Click Download to save offline layout files.</span>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

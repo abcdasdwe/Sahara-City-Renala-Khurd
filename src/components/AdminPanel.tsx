@@ -2331,69 +2331,90 @@ export default function AdminPanel({
                     />
                   </div>
 
-                  <div className="space-y-2 border border-gray-150 dark:border-gray-800/60 p-4 rounded-2xl bg-gray-50/50 dark:bg-black/10">
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase">Hero Section Background Image</label>
-                    <div className="flex flex-col sm:flex-row gap-4 items-center">
-                      {localSettings?.heroBackground && (
-                        <div className="h-20 w-32 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 flex-shrink-0 bg-black relative">
-                          <img src={localSettings.heroBackground} alt="Hero BG Preview" className="h-full w-full object-cover" />
-                        </div>
-                      )}
-                      <div className="flex-1 w-full space-y-2">
-                        <input
-                          type="text"
-                          required
-                          placeholder="Image URL or Base64 Data URI"
-                          value={localSettings?.heroBackground || ''}
-                          onChange={(e) => localSettings && setLocalSettings({ ...localSettings, heroBackground: e.target.value })}
-                          className="w-full bg-white dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3 text-xs"
+                  {/* Banner & Hero Settings Section with Live Card Preview */}
+                  <div className="space-y-3 border border-gray-150 dark:border-gray-800/60 p-4 rounded-2xl bg-gray-50/50 dark:bg-black/10">
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                      Hero Banner Layout & Background Image
+                    </label>
+                    
+                    {/* Live Banner Preview Box */}
+                    {localSettings && (
+                      <div className="relative rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 p-6 text-center text-white min-h-[140px] flex flex-col items-center justify-center bg-slate-900 shadow-inner">
+                        <img 
+                          src={(localSettings.heroBackground || '/sahara-bg.jpg').trim().replace(/['"]/g, '')} 
+                          alt="Hero Preview" 
+                          className="absolute inset-0 w-full h-full object-cover z-0 opacity-70"
+                          onError={(e) => { (e.target as HTMLImageElement).src = '/sahara-bg.jpg'; }}
                         />
-                        <div className="flex items-center gap-3">
-                          <label className="bg-[#0F1A2C]/10 hover:bg-[#0F1A2C]/20 dark:bg-white/10 dark:hover:bg-white/20 text-[#0F1A2C] dark:text-[#C5A880] font-bold text-[10px] uppercase tracking-wider py-1.5 px-3 rounded-lg cursor-pointer transition-colors inline-block">
-                            Upload Background Image
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  try {
-                                    triggerToast('Processing and compressing background image...', 'info');
-                                    const compressedDataUrl = await compressImage(file);
-                                    if (localSettings) {
-                                      const updated = { ...localSettings, heroBackground: compressedDataUrl };
-                                      setLocalSettings(updated);
-                                      await saveSettings(updated);
-                                      onRefreshData();
-                                      triggerToast('Hero background image updated & published to public website instantly!', 'success');
-                                    }
-                                  } catch (err) {
-                                    console.error(err);
-                                    triggerToast('Failed to process uploaded background image.', 'error');
-                                  } finally {
-                                    e.target.value = '';
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/30 z-10" />
+                        <div className="relative z-20 space-y-1 max-w-lg">
+                          <span className="inline-block text-[8px] font-bold text-[#C5A880] border border-[#C5A880]/50 px-2 py-0.5 rounded-full uppercase tracking-widest">
+                            LIVE HERO PREVIEW
+                          </span>
+                          <h4 className="text-base font-black uppercase text-[#e5f1e3] tracking-tight">
+                            {localSettings.heroTitle || 'Sahara Business City'}
+                          </h4>
+                          <p className="text-[10px] text-gray-300 font-light line-clamp-2">
+                            {localSettings.heroSubtitle || 'Luxurious Living & Secure Investments'}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="space-y-2 pt-2">
+                      <input
+                        type="text"
+                        required
+                        placeholder="Image URL or Base64 Data URI"
+                        value={localSettings?.heroBackground || ''}
+                        onChange={(e) => localSettings && setLocalSettings({ ...localSettings, heroBackground: e.target.value })}
+                        className="w-full bg-white dark:bg-black/30 border border-gray-250 dark:border-gray-800 rounded-xl py-2 px-3 text-xs"
+                      />
+                      <div className="flex items-center gap-3">
+                        <label className="bg-[#0F1A2C] hover:bg-slate-900 dark:bg-[#C5A880] dark:hover:bg-[#b8976d] text-white dark:text-[#090E16] font-bold text-[10px] uppercase tracking-wider py-1.5 px-3 rounded-lg cursor-pointer transition-colors inline-block">
+                          Upload Background Image
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                try {
+                                  triggerToast('Compressing background image...', 'info');
+                                  const compressedDataUrl = await compressImage(file);
+                                  if (localSettings) {
+                                    const updated = { ...localSettings, heroBackground: compressedDataUrl };
+                                    setLocalSettings(updated);
+                                    await saveSettings(updated);
+                                    onRefreshData();
+                                    triggerToast('Hero background image updated & published to public website instantly!', 'success');
                                   }
+                                } catch (err) {
+                                  console.error(err);
+                                  triggerToast('Failed to process uploaded background image.', 'error');
+                                } finally {
+                                  e.target.value = '';
                                 }
-                              }}
-                              className="hidden"
-                            />
-                          </label>
-                          <button
-                            type="button"
-                            onClick={async () => {
-                              if (localSettings) {
-                                const updated = { ...localSettings, heroBackground: '/sahara-bg.jpg' };
-                                setLocalSettings(updated);
-                                await saveSettings(updated);
-                                onRefreshData();
-                                triggerToast('Reset background to Sahara City standard master plan rendering!', 'success');
                               }
                             }}
-                            className="text-gray-500 hover:text-[#C5A880] text-[10px] font-bold uppercase tracking-wider cursor-pointer"
-                          >
-                            Reset to Default
-                          </button>
-                        </div>
+                            className="hidden"
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (localSettings) {
+                              const updated = { ...localSettings, heroBackground: '/sahara-bg.jpg' };
+                              setLocalSettings(updated);
+                              await saveSettings(updated);
+                              onRefreshData();
+                              triggerToast('Reset background to Sahara City standard master plan rendering!', 'success');
+                            }
+                          }}
+                          className="text-gray-500 hover:text-[#C5A880] text-[10px] font-bold uppercase tracking-wider cursor-pointer"
+                        >
+                          Reset to Default
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -2425,11 +2446,11 @@ export default function AdminPanel({
                               <ImageIcon className="h-5 w-5" />
                             </div>
                           )}
-                          <div className="flex-1 min-w-0">
-                            <span className="block text-[10px] text-gray-400 mb-1.5 font-medium truncate">
+                          <div className="flex-1 min-w-0 space-y-1.5">
+                            <span className="block text-[10px] text-gray-400 font-medium truncate">
                               {localSettings?.masterPlanImage ? 'Custom Blueprint Loaded' : 'Using default master plan map'}
                             </span>
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
                               <label className="bg-[#0F1A2C] hover:bg-slate-900 dark:bg-[#C5A880] dark:hover:bg-[#b8976d] text-white dark:text-[#090E16] font-bold text-[9px] uppercase tracking-wider py-1.5 px-3 rounded-lg cursor-pointer transition-colors">
                                 Upload Map Image
                                 <input
@@ -2459,6 +2480,18 @@ export default function AdminPanel({
                                   className="hidden"
                                 />
                               </label>
+
+                              {localSettings?.masterPlanImage && (
+                                <a
+                                  href={localSettings.masterPlanImage}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 text-gray-800 dark:text-gray-200 font-bold text-[9px] uppercase tracking-wider py-1.5 px-2.5 rounded-lg transition-colors inline-block"
+                                >
+                                  Preview Image
+                                </a>
+                              )}
+
                               {localSettings?.masterPlanImage && (
                                 <button
                                   type="button"
@@ -2472,7 +2505,7 @@ export default function AdminPanel({
                                       triggerToast('Reset to default system master plan map image.', 'info');
                                     }
                                   }}
-                                  className="text-red-500 hover:underline text-[9px] font-bold uppercase tracking-wider cursor-pointer"
+                                  className="text-red-500 hover:underline text-[9px] font-bold uppercase tracking-wider cursor-pointer ml-auto"
                                 >
                                   Reset
                                 </button>
@@ -2492,11 +2525,11 @@ export default function AdminPanel({
                           <div className="h-16 w-12 rounded-lg border border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center text-gray-400 shrink-0 bg-gray-50 dark:bg-black/10">
                             <FileText className="h-6 w-6 text-red-500/80" />
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <span className="block text-[10px] text-gray-400 mb-1.5 font-bold truncate">
+                          <div className="flex-1 min-w-0 space-y-1.5">
+                            <span className="block text-[10px] text-gray-400 font-bold truncate">
                               {localSettings?.masterPlanPdf ? (localSettings.masterPlanPdfName || 'Official_Master_Plan.pdf') : 'Using auto-generated PDF'}
                             </span>
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
                               <label className="bg-[#0F1A2C] hover:bg-slate-900 dark:bg-[#C5A880] dark:hover:bg-[#b8976d] text-white dark:text-[#090E16] font-bold text-[9px] uppercase tracking-wider py-1.5 px-3 rounded-lg cursor-pointer transition-colors">
                                 Upload PDF File
                                 <input
@@ -2534,6 +2567,26 @@ export default function AdminPanel({
                                   className="hidden"
                                 />
                               </label>
+
+                              {localSettings?.masterPlanPdf && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (localSettings?.masterPlanPdf) {
+                                      const link = document.createElement('a');
+                                      link.href = localSettings.masterPlanPdf;
+                                      link.download = localSettings.masterPlanPdfName || 'Official_Master_Plan.pdf';
+                                      document.body.appendChild(link);
+                                      link.click();
+                                      document.body.removeChild(link);
+                                    }
+                                  }}
+                                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[9px] uppercase tracking-wider py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer"
+                                >
+                                  Test PDF Download
+                                </button>
+                              )}
+
                               {localSettings?.masterPlanPdf && (
                                 <button
                                   type="button"
@@ -2548,7 +2601,7 @@ export default function AdminPanel({
                                       triggerToast('Reset to system generated PDF layout.', 'info');
                                     }
                                   }}
-                                  className="text-red-500 hover:underline text-[9px] font-bold uppercase tracking-wider cursor-pointer"
+                                  className="text-red-500 hover:underline text-[9px] font-bold uppercase tracking-wider cursor-pointer ml-auto"
                                 >
                                   Reset
                                 </button>
