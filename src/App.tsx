@@ -279,7 +279,7 @@ export default function App() {
           s.heroBackground = '/sahara-bg.jpg';
           changed = true;
         }
-        if (!s.heroTitle || s.heroTitle.trim() === '' || s.heroTitle.trim().toLowerCase() === 'hi') {
+        if (!s.heroTitle || s.heroTitle.trim() === '') {
           s.heroTitle = 'Sahara Business City';
           changed = true;
         }

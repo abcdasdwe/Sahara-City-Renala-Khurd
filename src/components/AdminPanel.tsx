@@ -406,7 +406,7 @@ export default function AdminPanel({
     e.preventDefault();
     if (localSettings) {
       const sanitizedSettings = { ...localSettings };
-      if (!sanitizedSettings.heroTitle || sanitizedSettings.heroTitle.trim() === '' || sanitizedSettings.heroTitle.trim().toLowerCase() === 'hi') {
+      if (!sanitizedSettings.heroTitle || sanitizedSettings.heroTitle.trim() === '') {
         sanitizedSettings.heroTitle = 'Sahara Business City';
       }
       await saveSettings(sanitizedSettings);

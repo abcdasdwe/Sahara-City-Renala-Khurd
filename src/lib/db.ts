@@ -3,17 +3,43 @@ import { Property, Lead, Review, Blog, MediaItem, AppSettings } from '../types';
 export const DB_NAME = 'SaharaCityDB';
 export const DB_VERSION = 2;
 
+let dbInstance: IDBDatabase | null = null;
+let dbPromise: Promise<IDBDatabase> | null = null;
+
 export function openDatabase(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
+  if (dbInstance) {
+    try {
+      if (dbInstance.name) return Promise.resolve(dbInstance);
+    } catch (e) {
+      dbInstance = null;
+    }
+  }
+
+  if (dbPromise) {
+    return dbPromise;
+  }
+
+  dbPromise = new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
     request.onerror = (event) => {
       console.error('IndexedDB opening error:', event);
+      dbPromise = null;
       reject(request.error);
     };
 
     request.onsuccess = (event) => {
-      resolve((event.target as IDBOpenDBRequest).result);
+      dbInstance = (event.target as IDBOpenDBRequest).result;
+      dbInstance.onclose = () => {
+        dbInstance = null;
+        dbPromise = null;
+      };
+      dbInstance.onversionchange = () => {
+        dbInstance?.close();
+        dbInstance = null;
+        dbPromise = null;
+      };
+      resolve(dbInstance);
     };
 
     request.onupgradeneeded = (event) => {
@@ -36,6 +62,8 @@ export function openDatabase(): Promise<IDBDatabase> {
       }
     };
   });
+
+  return dbPromise;
 }
 
 // Low-level database helpers
@@ -46,7 +74,7 @@ export async function dbGetAll<T>(storeName: string): Promise<T[]> {
     const store = transaction.objectStore(storeName);
     const request = store.getAll();
 
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => resolve(request.result || []);
     request.onerror = () => reject(request.error);
   });
 }
@@ -70,7 +98,9 @@ export async function dbPut<T>(storeName: string, item: T): Promise<T> {
     const store = transaction.objectStore(storeName);
     const request = store.put(item);
 
-    request.onsuccess = () => resolve(item);
+    transaction.oncomplete = () => resolve(item);
+    transaction.onerror = () => reject(transaction.error || request.error);
+    transaction.onabort = () => reject(transaction.error || request.error);
     request.onerror = () => reject(request.error);
   });
 }
@@ -82,7 +112,9 @@ export async function dbDelete(storeName: string, id: string): Promise<string> {
     const store = transaction.objectStore(storeName);
     const request = store.delete(id);
 
-    request.onsuccess = () => resolve(id);
+    transaction.oncomplete = () => resolve(id);
+    transaction.onerror = () => reject(transaction.error || request.error);
+    transaction.onabort = () => reject(transaction.error || request.error);
     request.onerror = () => reject(request.error);
   });
 }
@@ -106,6 +138,10 @@ export async function getSettings(): Promise<AppSettings> {
     if (cached) {
       try {
         settings = JSON.parse(cached);
+        if (settings) {
+          // Persist back to IndexedDB so they stay aligned
+          await dbPut('settings', { key: 'config', value: settings });
+        }
       } catch (err) {
         console.warn('Error reading settings from localStorage:', err);
       }
@@ -113,6 +149,11 @@ export async function getSettings(): Promise<AppSettings> {
   }
 
   if (settings) {
+    try {
+      localStorage.setItem('sahara_app_settings', JSON.stringify(settings));
+    } catch (e) {
+      // ignore
+    }
     return settings;
   }
 
@@ -137,6 +178,7 @@ export async function getSettings(): Promise<AppSettings> {
 
   try {
     await dbPut('settings', { key: 'config', value: defaultSettings });
+    localStorage.setItem('sahara_app_settings', JSON.stringify(defaultSettings));
   } catch (e) {
     console.warn('Could not save default settings to IndexedDB:', e);
   }
@@ -184,8 +226,16 @@ export async function saveSettings(settings: AppSettings): Promise<AppSettings> 
 
 // Seed Database Function
 export async function seedDatabaseIfEmpty() {
+  // Prevent re-seeding if database has already been initialized in this environment
+  if (localStorage.getItem('sahara_db_seeded') === 'true') {
+    return;
+  }
+
   const existingProps = await dbGetAll<Property>('properties');
-  if (existingProps.length > 0) return; // Database already seeded
+  if (existingProps.length > 0) {
+    localStorage.setItem('sahara_db_seeded', 'true');
+    return; // Database already seeded
+  }
 
   // Seed Properties
   const seedProperties: Property[] = [
@@ -558,4 +608,6 @@ Plot buyers are invited to schedule their physical site allocation checks and re
   for (const media of seedMedia) {
     await dbPut('media', media);
   }
+
+  localStorage.setItem('sahara_db_seeded', 'true');
 }
