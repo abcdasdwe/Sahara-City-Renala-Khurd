@@ -275,6 +275,13 @@ export default function MasterPlanSection({ settings }: MasterPlanSectionProps) 
                     {/* Ambient dark vignette gradient */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 opacity-80 group-hover/blueprint:opacity-40 transition-opacity duration-500" />
 
+                    {(settings?.masterPlanImage || settings?.masterPlanPdf) && (
+                      <div className="absolute top-3 left-3 bg-[#090E16]/90 text-[#C5A880] backdrop-blur-md px-2.5 py-1 rounded-lg text-[9px] font-mono font-bold tracking-wider flex items-center gap-1.5 border border-[#C5A880]/30 shadow-md">
+                        <Sparkles className="h-3 w-3 text-[#C5A880] animate-pulse" />
+                        <span>OFFICIAL UPLOADED BLUEPRINT</span>
+                      </div>
+                    )}
+
                     {/* Animated interactive zoom overlay */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/65 opacity-0 group-hover/blueprint:opacity-100 transition-opacity duration-500 backdrop-blur-[2px]">
                       <div className="p-3 bg-[#C5A880] text-[#090E16] rounded-full shadow-lg scale-75 group-hover/blueprint:scale-100 transition-transform duration-500">

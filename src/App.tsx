@@ -303,6 +303,21 @@ export default function App() {
 
   useEffect(() => {
     refreshDatabaseData();
+
+    const handleSettingsUpdated = (e: Event) => {
+      const customEvt = e as CustomEvent<AppSettings>;
+      if (customEvt.detail) {
+        setSettings({ ...customEvt.detail });
+      }
+    };
+
+    window.addEventListener('sahara_settings_updated', handleSettingsUpdated);
+    window.addEventListener('storage', refreshDatabaseData);
+
+    return () => {
+      window.removeEventListener('sahara_settings_updated', handleSettingsUpdated);
+      window.removeEventListener('storage', refreshDatabaseData);
+    };
   }, []);
 
   // Update theme tag on document element for tailwind v4 class integration

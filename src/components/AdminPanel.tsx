@@ -2366,8 +2366,11 @@ export default function AdminPanel({
                                         triggerToast('Compressing high-definition blueprint image...', 'info');
                                         const base64Url = await compressImage(file, 2560, 2560, 0.9);
                                         if (localSettings) {
-                                          setLocalSettings({ ...localSettings, masterPlanImage: base64Url });
-                                          triggerToast('Blueprint image loaded! Remember to click Synchronize below.', 'success');
+                                          const updated = { ...localSettings, masterPlanImage: base64Url };
+                                          setLocalSettings(updated);
+                                          await saveSettings(updated);
+                                          onRefreshData();
+                                          triggerToast('Blueprint image uploaded & published to public website instantly!', 'success');
                                         }
                                       } catch (err) {
                                         triggerToast('Error processing blueprint image.', 'error');
@@ -2380,11 +2383,13 @@ export default function AdminPanel({
                               {localSettings?.masterPlanImage && (
                                 <button
                                   type="button"
-                                  onClick={() => {
+                                  onClick={async () => {
                                     if (localSettings) {
                                       const updated = { ...localSettings };
                                       delete updated.masterPlanImage;
                                       setLocalSettings(updated);
+                                      await saveSettings(updated);
+                                      onRefreshData();
                                       triggerToast('Reset to default system master plan map image.', 'info');
                                     }
                                   }}
@@ -2427,15 +2432,18 @@ export default function AdminPanel({
                                       }
                                       triggerToast('Reading master plan PDF file...', 'info');
                                       const reader = new FileReader();
-                                      reader.onload = (event) => {
+                                      reader.onload = async (event) => {
                                         const base64Url = event.target?.result as string;
                                         if (localSettings) {
-                                          setLocalSettings({ 
+                                          const updated = { 
                                             ...localSettings, 
                                             masterPlanPdf: base64Url,
                                             masterPlanPdfName: file.name
-                                          });
-                                          triggerToast('Master plan PDF document loaded! Remember to click Synchronize below.', 'success');
+                                          };
+                                          setLocalSettings(updated);
+                                          await saveSettings(updated);
+                                          onRefreshData();
+                                          triggerToast('Master plan PDF document uploaded & published to public website instantly!', 'success');
                                         }
                                       };
                                       reader.onerror = () => triggerToast('Failed to read PDF.', 'error');
@@ -2448,12 +2456,14 @@ export default function AdminPanel({
                               {localSettings?.masterPlanPdf && (
                                 <button
                                   type="button"
-                                  onClick={() => {
+                                  onClick={async () => {
                                     if (localSettings) {
                                       const updated = { ...localSettings };
                                       delete updated.masterPlanPdf;
                                       delete updated.masterPlanPdfName;
                                       setLocalSettings(updated);
+                                      await saveSettings(updated);
+                                      onRefreshData();
                                       triggerToast('Reset to system generated PDF layout.', 'info');
                                     }
                                   }}

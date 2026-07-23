@@ -89,8 +89,32 @@ export async function dbDelete(storeName: string, id: string): Promise<string> {
 
 // Specific wrappers
 export async function getSettings(): Promise<AppSettings> {
-  const item = await dbGet<{ key: string; value: AppSettings }>('settings', 'config');
-  if (item) return item.value;
+  let settings: AppSettings | null = null;
+  
+  try {
+    const item = await dbGet<{ key: string; value: AppSettings }>('settings', 'config');
+    if (item && item.value) {
+      settings = item.value;
+    }
+  } catch (err) {
+    console.warn('Error fetching settings from IndexedDB store:', err);
+  }
+
+  // Check fallback in localStorage if IndexedDB settings not found or empty
+  if (!settings) {
+    const cached = localStorage.getItem('sahara_app_settings');
+    if (cached) {
+      try {
+        settings = JSON.parse(cached);
+      } catch (err) {
+        console.warn('Error reading settings from localStorage:', err);
+      }
+    }
+  }
+
+  if (settings) {
+    return settings;
+  }
 
   // Default app settings matching prompt and screenshot details
   const defaultSettings: AppSettings = {
@@ -111,12 +135,50 @@ export async function getSettings(): Promise<AppSettings> {
     footerCopyrightText: '© 2026 Sahara City Renala Khurd. All Rights Reserved. Designed for upscale lifestyle & secure investments.'
   };
 
-  await dbPut('settings', { key: 'config', value: defaultSettings });
+  try {
+    await dbPut('settings', { key: 'config', value: defaultSettings });
+  } catch (e) {
+    console.warn('Could not save default settings to IndexedDB:', e);
+  }
+
   return defaultSettings;
 }
 
 export async function saveSettings(settings: AppSettings): Promise<AppSettings> {
-  await dbPut('settings', { key: 'config', value: settings });
+  // 1. Save to IndexedDB
+  try {
+    await dbPut('settings', { key: 'config', value: settings });
+  } catch (err) {
+    console.error('Error persisting settings to IndexedDB:', err);
+  }
+
+  // 2. Cache in localStorage for fast synchronous recovery across reloads
+  try {
+    localStorage.setItem('sahara_app_settings', JSON.stringify(settings));
+  } catch (err) {
+    // If payload is large (e.g. huge PDF/Image base64), strip large strings for localStorage backup
+    console.warn('localStorage quota exceeded. Saving lightweight settings backup without large blobs:', err);
+    try {
+      const lightweight = { ...settings };
+      if (lightweight.masterPlanPdf && lightweight.masterPlanPdf.length > 500000) {
+        delete lightweight.masterPlanPdf;
+      }
+      if (lightweight.masterPlanImage && lightweight.masterPlanImage.length > 500000) {
+        delete lightweight.masterPlanImage;
+      }
+      localStorage.setItem('sahara_app_settings', JSON.stringify(lightweight));
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  // 3. Dispatch real-time custom event to immediately notify mounted UI components (e.g. MasterPlanSection)
+  try {
+    window.dispatchEvent(new CustomEvent('sahara_settings_updated', { detail: settings }));
+  } catch (e) {
+    console.warn('Error dispatching settings update event:', e);
+  }
+
   return settings;
 }
 
