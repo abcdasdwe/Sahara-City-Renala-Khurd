@@ -12,96 +12,114 @@ if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
-// Default initial data for central store
+// Default initial data for central store matching src/types.ts interfaces
 const defaultDbData = {
   properties: [
     {
       id: 'SC-P01',
       title: '5 Marla Residential Plot - Prime Location Park View',
-      category: 'Residential',
-      offeringType: 'Plots',
-      price: 'PKR 2,200,000',
-      numericPrice: 2200000,
-      monthlyInstallment: 'PKR 22,000 / month',
-      downPayment: 'PKR 250,000',
-      location: 'Block A, Executive Sector, Sahara City, Renala Khurd',
-      size: '5 Marla (125 Sq. Yds)',
-      beds: 'N/A',
-      baths: 'N/A',
-      marla: '5 Marla',
-      block: 'Block A',
-      status: 'Available',
-      features: ['24/7 Gated Security', '3-Phase Underground Electricity', '40ft Wide Carpeted Road', 'Front Facing Community Park', 'Sewerage & Tap Water'],
-      images: ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=1200'],
-      description: 'Golden investment opportunity in Block A of Sahara City Renala Khurd. Located directly opposite the central theme park with immediate possession on completion of down payment terms.',
-      isFeatured: true,
-      phase: 'Phase 1'
+      description: 'Stunning 5 Marla (approx. 1125 sq ft) residential plot. Offers direct view of the central scenic park and within easy walking distance to the Grand Jamia Mosque. Ready for immediate construction (possession ready) in Phase A. Prime environment with paved roads and continuous security surveillance.',
+      price: 1850000,
+      city: 'Renala Khurd',
+      area: '5 Marla',
+      bedrooms: 0,
+      bathrooms: 0,
+      propertyType: 'Residential Plot',
+      purpose: 'Installment',
+      images: [
+        'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=800',
+        'https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?auto=format&fit=crop&q=80&w=800'
+      ],
+      mapLocation: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3429.2885973942007!2d73.5960011!3d30.7380998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39229be4949a2a3f%3A0xe679237077a76e0d!2sSahara%20City%20Renala%20Khurd!5e0!3m2!1sen!2spk!4v1700000000000!5m2!1sen!2spk',
+      status: 'Featured',
+      installmentDetails: {
+        downPayment: 350000,
+        monthlyInstallment: 15000,
+        quarterlyInstallment: 75000,
+        totalInstallments: 36,
+        possessionDate: '2027-12-31'
+      },
+      availabilityCalendar: {
+        '2026-06-25': 'Vacant'
+      },
+      createdDate: '2026-05-15',
+      views: 145
     },
     {
       id: 'SC-P02',
       title: 'Premium 5 Marla Residential Plot - Corner Block',
-      category: 'Residential',
-      offeringType: 'Plots',
-      price: 'PKR 2,450,000',
-      numericPrice: 2450000,
-      monthlyInstallment: 'PKR 24,500 / month',
-      downPayment: 'PKR 280,000',
-      location: 'Block B, Boulevard Corner, Sahara City, Renala Khurd',
-      size: '5 Marla Corner Plot',
-      beds: 'N/A',
-      baths: 'N/A',
-      marla: '5 Marla',
-      block: 'Block B',
-      status: 'Available',
-      features: ['Corner Double Facing', '60ft Main Boulevard Access', 'Gated Sector Security', 'Underground Utilities', 'Immediate Registry'],
-      images: ['https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=1200'],
-      description: 'Exclusive 5 Marla Corner plot situated on the 60ft Main Boulevard. Highest commercial appreciation potential in Block B.',
-      isFeatured: true,
-      phase: 'Phase 1'
+      description: 'Elegant corner-facing 5 Marla (approx. 1125 sq ft) residential plot. Key design details feature premium road connectivity, standard water connection lines, corner boundary walls, and direct frontage overlooking green gardens. Full underground grid connection and smart water filtration.',
+      price: 2200000,
+      city: 'Renala Khurd',
+      area: '5 Marla',
+      bedrooms: 0,
+      bathrooms: 0,
+      propertyType: 'Residential Plot',
+      purpose: 'For Sale',
+      images: [
+        'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=800',
+        'https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?auto=format&fit=crop&q=80&w=800'
+      ],
+      mapLocation: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3429.2885973942007!2d73.5960011!3d30.7380998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39229be4949a2a3f%3A0xe679237077a76e0d!2sSahara%20City%20Renala%20Khurd!5e0!3m2!1sen!2spk!4v1700000000000!5m2!1sen!2spk',
+      status: 'New Listing',
+      availabilityCalendar: {
+        '2026-06-22': 'Vacant'
+      },
+      createdDate: '2026-06-18',
+      views: 78
     },
     {
-      id: 'SC-P03',
-      title: '10 Marla Luxury Villa - Fully Furnished Smart Home',
-      category: 'Residential',
-      offeringType: 'Villas',
-      price: 'PKR 14,500,000',
-      numericPrice: 14500000,
-      monthlyInstallment: 'PKR 150,000 / month',
-      downPayment: 'PKR 2,500,000',
-      location: 'Executive Overseas Sector, Sahara City, Renala Khurd',
-      size: '10 Marla (250 Sq. Yds)',
-      beds: '5 Bedrooms',
-      baths: '6 Bathrooms',
-      marla: '10 Marla',
-      block: 'Overseas Block',
+      id: 'SC-C03',
+      title: '4 Marla Main Boulevard Commercial Junction Plot',
+      description: 'High-traffic commercial land on the 100ft wide Main Boulevard. Perfect shopfront real estate for supermarkets, pharmaceutical businesses, banking offices, or luxury clothing retail. Enormous parking allocation. Outstanding annual yield projection due to massive local expansion.',
+      price: 6500000,
+      city: 'Renala Khurd',
+      area: '4 Marla',
+      bedrooms: 0,
+      bathrooms: 0,
+      propertyType: 'Commercial Plot',
+      purpose: 'For Sale',
+      images: [
+        'https://images.unsplash.com/photo-1582407947304-fd86f028f716?auto=format&fit=crop&q=80&w=800',
+        'https://images.unsplash.com/photo-1554469384-e58fac16e23a?auto=format&fit=crop&q=80&w=800'
+      ],
+      mapLocation: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3429.2885973942007!2d73.5960011!3d30.7380998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39229be4949a2a3f%3A0xe679237077a76e0d!2sSahara%20City%20Renala%20Khurd!5e0!3m2!1sen!2spk!4v1700000000000!5m2!1sen!2spk',
       status: 'Available',
-      features: ['Spanish Design Architecture', 'Imported Marble Flooring', 'Solar Power Ready', 'Servant Quarter', 'Double Kitchen', 'Lawn & Car Porch'],
-      images: ['https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=1200'],
-      description: 'Magnificent 10 Marla turnkey villa constructed with gold-standard structural engineering. Modern Spanish elevation featuring state-of-the-art kitchen cabinetry, designer sanitary fittings, and lush lawn.',
-      isFeatured: true,
-      phase: 'Phase 1'
+      installmentDetails: {
+        downPayment: 1500000,
+        monthlyInstallment: 50000,
+        quarterlyInstallment: 250000,
+        totalInstallments: 24,
+        possessionDate: '2026-12-01'
+      },
+      createdDate: '2026-04-10',
+      views: 210
     },
     {
       id: 'SC-P04',
-      title: '4 Marla Commercial Plot - Main Boulevard Commercial Hub',
-      category: 'Commercial',
-      offeringType: 'Commercial',
-      price: 'PKR 5,800,000',
-      numericPrice: 5800000,
-      monthlyInstallment: 'PKR 55,000 / month',
-      downPayment: 'PKR 850,000',
-      location: 'Central Civic Center, Sahara City Main Boulevard, Renala Khurd',
-      size: '4 Marla Commercial',
-      beds: 'N/A',
-      baths: 'N/A',
-      marla: '4 Marla',
-      block: 'Commercial Hub',
-      status: 'Available',
-      features: ['Main Boulevard Frontage', 'Plaza Construction Approved (Basement + 4)', 'High Footfall Zone', 'Ample Customer Parking', 'Separate Utility Connections'],
-      images: ['https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&q=80&w=1200'],
-      description: 'Prime commercial plot for corporate offices, retail banks, supermarkets, or medical plazas. Unmatched ROI potential on Renala Khurd bypass corridor.',
-      isFeatured: true,
-      phase: 'Phase 1'
+      title: '10 Marla VIP Master Block Residential Land',
+      description: 'Exclusive 10 Marla resident land in Sector C, Sahara City. Highly demanding level plot directly near family fountain park and jogging trails. Underground security systems, active community water filtration facility, immediate electricity meter installation permissible. Ideal layout for a magnificent 4 or 5 bedroom custom family residence.',
+      price: 3400000,
+      city: 'Renala Khurd',
+      area: '10 Marla',
+      bedrooms: 0,
+      bathrooms: 0,
+      propertyType: 'Residential Plot',
+      purpose: 'Installment',
+      images: [
+        'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=800'
+      ],
+      mapLocation: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3429.2885973942007!2d73.5960011!3d30.7380998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39229be4949a2a3f%3A0xe679237077a76e0d!2sSahara%20City%20Renala%20Khurd!5e0!3m2!1sen!2spk!4v1700000000000!5m2!1sen!2spk',
+      status: 'Featured',
+      installmentDetails: {
+        downPayment: 600000,
+        monthlyInstallment: 30000,
+        quarterlyInstallment: 150000,
+        totalInstallments: 36,
+        possessionDate: '2028-06-30'
+      },
+      createdDate: '2026-05-22',
+      views: 189
     }
   ],
   leads: [
@@ -120,36 +138,43 @@ const defaultDbData = {
   reviews: [
     {
       id: 'rev-01',
-      authorName: 'Chaudhry Tariq Mahmood',
-      designation: 'Overseas Resident & Investor',
+      customerName: 'Muhammad Salman',
+      email: 'salman@gmail.com',
       rating: 5,
-      comment: 'Invested in 2 plots in Block A from Dubai. The development speed of Sahara City Renala Khurd exceeded all expectations. Roads, streetlights, and security gating are top tier!',
-      verifiedPurchase: true,
-      date: '2026-05-14'
+      comment: 'Excellent Residence Area. Secure gated setup, outstanding road networks and lovely green lawns for kids. Best society in Renala Khurd!',
+      isApproved: true,
+      createdDate: '2026-06-15'
     },
     {
       id: 'rev-02',
-      authorName: 'Dr. Shahida Parveen',
-      designation: 'Villa Owner',
+      customerName: 'Anwar Ali',
+      email: 'anwar_ali@yahoo.com',
       rating: 5,
-      comment: 'Living here peacefully for 6 months. Clean water supply, underground electricity, and 24/7 security guard patrolling give complete peace of mind for our family.',
-      verifiedPurchase: true,
-      date: '2026-06-01'
+      comment: 'Very good environment to live in safe place. Security staff is extremely professional, highly alert at main gates. Close to N5 Highway.',
+      isApproved: true,
+      createdDate: '2026-06-12'
+    },
+    {
+      id: 'rev-03',
+      customerName: 'Chaudhary Kashif',
+      email: 'kashif.chaudhary@outlook.com',
+      rating: 4,
+      comment: 'Bought a 5 Marla plot on easy monthly installments. The entire documentation transfer procedure was seamless. Highly reliable property dealers!',
+      isApproved: true,
+      createdDate: '2026-06-05'
     }
   ],
   blogs: [
     {
       id: 'blog-01',
       title: 'Why Sahara City Renala Khurd is Punjab\'s Top Real Estate Investment in 2026',
-      slug: 'why-sahara-city-renala-khurd-is-top-investment-2026',
-      summary: 'Explore how rapid N5 Highway connectivity, interest-free installment plans, and gold-standard infrastructure make Sahara City the safest high-yield investment.',
-      content: 'Real estate in Punjab is undergoing a massive shift towards master-planned gated communities. Sahara City Renala Khurd stands at the forefront of this transformation. Situated directly adjacent to key transport arteries near Okara, Sahara City offers unmatched urban planning, underground electricity, high-speed fiber internet, and family-friendly thematic parks. Investors have witnessed up to 35% capital appreciation over the past two years.',
-      category: 'Market Trends',
-      author: 'Sahara Editorial Desk',
-      date: '2026-06-15',
-      readTime: '4 min read',
-      coverImage: 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&q=80&w=1200',
-      published: true
+      slug: 'why-sahara-city-investment-2026',
+      category: 'Investment',
+      summary: 'An depth financial analysis of current real estate trends in Renala Khurd (Sahiwal Division) and why gated communities offer guaranteed passive yields.',
+      content: 'Real estate in Punjab is undergoing a massive shift towards master-planned gated communities. Sahara City Renala Khurd stands at the forefront of this transformation. Situated directly adjacent to key transport arteries near Okara, Sahara City offers unmatched urban planning, underground electricity, high-speed fiber internet, and family-friendly thematic parks.',
+      image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=800',
+      author: 'Imran Shah (Property Consultant)',
+      createdDate: '2026-06-15'
     }
   ],
   media: [
@@ -186,24 +211,37 @@ function readDbFile() {
   try {
     if (fs.existsSync(DB_FILE)) {
       const raw = fs.readFileSync(DB_FILE, 'utf-8');
-      return JSON.parse(raw);
+      if (raw && raw.trim()) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          return parsed;
+        }
+      }
     }
   } catch (err) {
     console.error('Failed reading DB file, re-initializing default store:', err);
   }
   // If missing or unreadable, write default
-  fs.writeFileSync(DB_FILE, JSON.stringify(defaultDbData, null, 2), 'utf-8');
+  writeDbFile(defaultDbData);
   return defaultDbData;
 }
 
 // Helper function to write database file safely
 function writeDbFile(data: any) {
   try {
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+    const tmpFile = `${DB_FILE}.tmp`;
+    fs.writeFileSync(tmpFile, JSON.stringify(data, null, 2), 'utf-8');
+    fs.renameSync(tmpFile, DB_FILE);
     return true;
   } catch (err) {
     console.error('Failed writing DB file:', err);
-    return false;
+    try {
+      fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+      return true;
+    } catch (e2) {
+      console.error('Fallback write also failed:', e2);
+      return false;
+    }
   }
 }
 

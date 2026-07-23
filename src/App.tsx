@@ -17,7 +17,7 @@ import SEOHead from './components/SEOHead';
 import MasterPlanSection from './components/MasterPlanSection';
 import { faqList } from './faqData';
 import { Property, Lead, Review, Blog, MediaItem, AppSettings } from './types';
-import { dbGetAll, dbPut, getSettings, seedDatabaseIfEmpty, saveSettings, syncServerDatabase } from './lib/db';
+import { dbGetAll, dbPut, dbPutLocal, getSettings, seedDatabaseIfEmpty, saveSettings, syncServerDatabase } from './lib/db';
 import { generatePropertyPDF } from './lib/pdfGenerator';
 
 export default function App() {
@@ -315,8 +315,8 @@ export default function App() {
           changed = true;
         }
         if (changed) {
-          console.log(`[refreshDatabaseData] [#${refreshId}] Saving sanitized default settings back to DB...`);
-          await saveSettings(s);
+          console.log(`[refreshDatabaseData] [#${refreshId}] Saving sanitized local default settings...`);
+          await dbPutLocal('settings', { key: 'config', value: s });
         }
       }
 

@@ -154,7 +154,7 @@ export async function syncServerDatabase(): Promise<any> {
 }
 
 // Low-level database helper for local writing without recursive API calling
-async function dbPutLocal<T>(storeName: string, item: T): Promise<T> {
+export async function dbPutLocal<T>(storeName: string, item: T): Promise<T> {
   const db = await openDatabase();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(storeName, 'readwrite');
@@ -251,7 +251,7 @@ export async function getSettings(): Promise<AppSettings> {
         if (cachedSettings) {
           settings = cachedSettings;
           // Only sync back to IndexedDB if it doesn't risk overwriting IndexedDB with a stripped fallback
-          await dbPut('settings', { key: 'config', value: settings });
+          await dbPutLocal('settings', { key: 'config', value: settings });
         }
       } catch (err) {
         console.warn('Error reading settings from localStorage:', err);
@@ -304,7 +304,7 @@ export async function getSettings(): Promise<AppSettings> {
   };
 
   try {
-    await dbPut('settings', { key: 'config', value: defaultSettings });
+    await dbPutLocal('settings', { key: 'config', value: defaultSettings });
     localStorage.setItem('sahara_app_settings', JSON.stringify(defaultSettings));
   } catch (e) {
     console.warn('Could not save default settings to IndexedDB:', e);
