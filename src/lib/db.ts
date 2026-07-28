@@ -170,23 +170,31 @@ export async function dbPut<T>(storeName: string, item: T): Promise<T> {
   const timestamp = new Date().toISOString();
   console.log(`[dbPut] [${timestamp}] Executing write on store: "${storeName}"`, item);
   
+  const formattedItem = (storeName === 'settings' && !(item as any).key)
+    ? ({ key: 'config', value: item } as any)
+    : item;
+
   // 1. Put item locally in IndexedDB
-  await dbPutLocal(storeName, item);
+  await dbPutLocal(storeName, formattedItem);
 
   // 2. Put item on central Express server so all browsers receive update
   try {
     await fetch('/api/db/put', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ storeName, item })
+      body: JSON.stringify({ storeName, item: formattedItem })
     });
   } catch (e) {
     console.warn('Failed to sync dbPut to server:', e);
   }
 
+  // 3. Trigger localStorage event & custom events to force immediate deep state synchronization across all browser instances
   try {
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('sahara_db_updated'));
+      const updateTrigger = Date.now().toString();
+      window.localStorage.setItem('sahara_db_update_trigger', updateTrigger);
+      window.dispatchEvent(new CustomEvent('sahara_db_updated', { detail: { storeName, item: formattedItem, timestamp: updateTrigger } }));
+      window.dispatchEvent(new Event('storage'));
     }
   } catch (e) {
     // ignore
@@ -220,7 +228,10 @@ export async function dbDelete(storeName: string, id: string): Promise<string> {
 
   try {
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('sahara_db_updated'));
+      const updateTrigger = Date.now().toString();
+      window.localStorage.setItem('sahara_db_update_trigger', updateTrigger);
+      window.dispatchEvent(new CustomEvent('sahara_db_updated', { detail: { storeName, id, timestamp: updateTrigger } }));
+      window.dispatchEvent(new Event('storage'));
     }
   } catch (e) {
     // ignore
@@ -250,7 +261,7 @@ export async function getSettings(): Promise<AppSettings> {
         const cachedSettings = JSON.parse(cached);
         if (cachedSettings) {
           settings = cachedSettings;
-          // Only sync back to IndexedDB if it doesn't risk overwriting IndexedDB with a stripped fallback
+          // Sync back to IndexedDB
           await dbPutLocal('settings', { key: 'config', value: settings });
         }
       } catch (err) {
@@ -355,10 +366,15 @@ export async function saveSettings(settings: AppSettings): Promise<AppSettings> 
     }
   }
 
-  // 4. Dispatch real-time custom event to immediately notify mounted UI components (e.g. MasterPlanSection, App)
+  // 4. Force event-driven update & broadcast across active instances
   try {
-    window.dispatchEvent(new CustomEvent('sahara_settings_updated', { detail: settings }));
-    window.dispatchEvent(new CustomEvent('sahara_db_updated'));
+    if (typeof window !== 'undefined') {
+      const updateTrigger = Date.now().toString();
+      window.localStorage.setItem('sahara_db_update_trigger', updateTrigger);
+      window.dispatchEvent(new CustomEvent('sahara_settings_updated', { detail: settings }));
+      window.dispatchEvent(new CustomEvent('sahara_db_updated', { detail: { storeName: 'settings', item: settings, timestamp: updateTrigger } }));
+      window.dispatchEvent(new Event('storage'));
+    }
   } catch (e) {
     console.warn('Error dispatching settings update event:', e);
   }
